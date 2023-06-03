@@ -5,8 +5,10 @@ use clap::{Parser, Subcommand, Args};
 #[command(name = "Bunch of Gits")]
 #[command(author = "Travis P. <travis.s.potter@gmail.com>")]
 #[command(version = "1.0")]
-#[command(about = "Takes the hassle out of working within multi-repo code bases.", long_about = "Quickly switch between git repositories and specified branches to get your machine to the right state for the feature or bug changes you care about right now. Bookmarks for git workflows. Just a bunch of gits.")]
-pub struct BOGArgs {
+#[command(about = "Takes the hassle out of working within multi-repo code bases.", long_about =
+    "Quickly switch between git repositories and specified branches to get your machine to the
+right state for the feature or bug changes you care about right now. Bookmarks for git workflows.
+Just a bunch of gits.")] pub struct BOGArgs {
     #[command(subcommand)]
     command: SubCommands,
 
@@ -20,7 +22,7 @@ pub struct BOGArgs {
 }
 
 pub fn match_command(args: &BOGArgs){
-match &args.command {
+    match &args.command {
         SubCommands::Add(subcommand_args) => {
             add(&subcommand_args);
         },
@@ -28,13 +30,13 @@ match &args.command {
             delete(&subcommand_args);
         },
         SubCommands::Switch(subcommand_args) => {
-           switch(&subcommand_args);
+            switch(&subcommand_args);
         },
         SubCommands::Previous(subcommand_args) => {
-           previous(&subcommand_args);
+            previous(&subcommand_args);
         },
         SubCommands::List(subcommand_args) => {
-           list(&subcommand_args);
+            list(&subcommand_args);
         },
     }
 }
