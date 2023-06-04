@@ -36,7 +36,7 @@ pub enum SubCommands {
     Pull(PullArgs),
 
     /// Set up a template
-    Template(TemplateArgs)
+    Template(TemplateArgs),
 }
 
 #[derive(Args, Debug)]
@@ -44,7 +44,7 @@ pub struct AddArgs {
     name: Option<String>,
 }
 
-pub fn add(args: &AddArgs){
+pub fn add(args: &AddArgs) {
     //do something with this
     /*
     Need a known place for settings. I guess always look in the root directory or there should be
@@ -63,11 +63,11 @@ pub struct DeleteArgs {
     name: Option<String>,
 }
 
-pub fn delete(args: &DeleteArgs){
+pub fn delete(args: &DeleteArgs) {
     //do something with this
     /*
     read in settings
-    get the bunch with the same name 
+    get the bunch with the same name
     modify the bunch by deleting the relavant part of the config
     write settings back
     return confirmaiton
@@ -79,7 +79,7 @@ pub struct SwitchArgs {
     name: Option<String>,
 }
 
-pub fn switch(args: &SwitchArgs){
+pub fn switch(args: &SwitchArgs) {
     //do something with this
     /*
     read in settings
@@ -96,7 +96,7 @@ pub struct PreviousArgs {
     name: Option<String>,
 }
 
-pub fn previous(args: &PreviousArgs){
+pub fn previous(args: &PreviousArgs) {
     //do something with this
     /*
     get previous state name from settings
@@ -110,7 +110,7 @@ pub struct ListArgs {
     name: Option<String>,
 }
 
-pub fn list(args: &ListArgs){
+pub fn list(args: &ListArgs) {
     //do something with this
     /*
     get settings
@@ -124,9 +124,8 @@ pub struct InitArgs {
     name: Option<String>,
 }
 
-pub fn init(args: &InitArgs){
+pub fn init(args: &InitArgs) {
     //initialize a new bunch current branch/repo
-
 }
 
 #[derive(Args, Debug)]
@@ -134,7 +133,7 @@ pub struct GoArgs {
     name: Option<String>,
 }
 
-pub fn go (args: &GoArgs){
+pub fn go(args: &GoArgs) {
     //(take in a bunch name, and then run needed commands to switch over all the branches)
 }
 
@@ -143,7 +142,7 @@ pub struct NewArgs {
     name: Option<String>,
 }
 
-pub fn new(args: &NewArgs){
+pub fn new(args: &NewArgs) {
 
     //(create new set of branches in repos based on bunch template)
 }
@@ -153,7 +152,7 @@ pub struct ConfigArgs {
     name: Option<String>,
 }
 
-pub fn config(args: &ConfigArgs){
+pub fn config(args: &ConfigArgs) {
 
     //(opens toml config file in text editor to set global settings) or flags/args inline to set
 }
@@ -163,7 +162,7 @@ pub struct PullArgs {
     name: Option<String>,
 }
 
-pub fn pull(args: &PullArgs){
+pub fn pull(args: &PullArgs) {
     //(switch to branches from bunch collection, and pull down latest, just fail on merge conflicts)
 }
 
@@ -172,7 +171,7 @@ pub struct PushArgs {
     name: Option<String>,
 }
 
-pub fn push(args: &PushArgs){
+pub fn push(args: &PushArgs) {
 
     //(switch to brances from bunch collection, and push to remote, does not handle tracking files or committing -- user to do this)
 }
@@ -182,7 +181,7 @@ pub struct TemplateArgs {
     name: Option<String>,
 }
 
-pub fn template(args: &TemplateArgs){
+pub fn template(args: &TemplateArgs) {
 
     //(takes in arguments vector of repo names to be used for common development workflows) ex. three repos are commonly involved in each feature development. allow for quickly creating a branch on each of the repos of the same name
 }
