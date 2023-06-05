@@ -17,14 +17,14 @@ fn main() {
     let result = match_command(&args);
 
     let command = GitCommand::new( 
-        "ls".to_string(), 
-        vec!["-h".to_string(), "-a".to_string()]
+        "/Users/travispotter/Desktop/Code/Notes".to_string(),
+        vec!["status"].iter().map(|&s| s.to_string()).collect()
     );
 
 
-if let Err(e) = run_process(&command) {
-    eprintln!("Error: {}", e);
-}
+    if let Err(e) = run_process(&command) {
+        eprintln!("Error: {}", e);
+    }
 
-utility::settings::init().ok();
+    utility::settings::init().ok();
 }
