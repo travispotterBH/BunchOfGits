@@ -16,13 +16,23 @@ fn main() {
 
     let result = match_command(&args);
 
+
+    /*
     let command = GitCommand::new( 
         "/Users/travispotter/Desktop/Code/Notes".to_string(),
         vec!["status"].iter().map(|&s| s.to_string()).collect()
     );
+    */
+    let new_branch = GitCommand::new(
+        "/Users/travispotter/Desktop/Code/Notes".to_string(),
+         "test_branch3".to_string());
+
+    let switch_branch = GitCommand::switch(
+        "/Users/travispotter/Desktop/Code/Notes".to_string(),
+        "test_branch".to_string());
 
 
-    if let Err(e) = run_process(&command) {
+    if let Err(e) = run_process(&new_branch) {
         eprintln!("Error: {}", e);
     }
 
