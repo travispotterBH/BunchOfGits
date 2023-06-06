@@ -1,5 +1,6 @@
 use std::process::Command;
-use std::io::Result;
+use std::io::{Result, Write};
+use crate::cli::information::*;
 
 pub fn run_process(command: &GitCommand) -> Result<()>{
     let mut cmd = command_builder(&command);
