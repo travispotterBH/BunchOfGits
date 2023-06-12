@@ -10,7 +10,6 @@ use crate::utility::settings::*;
 use clap::Parser;
 use crate::git::git::*;
 
-//Main
 fn main() {
     let args = MainArgs::parse();
 

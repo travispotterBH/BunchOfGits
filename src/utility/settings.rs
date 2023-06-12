@@ -1,7 +1,10 @@
 use directories::*;
+use toml::value::Date;
+use toml::value::Datetime;
 use std::fs;
 use std::io::*;
 use std::path::Path;
+use std::u8;
 
 use serde_derive::{Deserialize, Serialize};
 
@@ -55,7 +58,23 @@ pub fn init() -> std::io::Result<()> {
 pub struct TestStruct {
     item: String,
 }
-
+ 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Bunch{
+    name: String,
+    items: Vec<Item>,
+    last_used: Datetime
+}
+ 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Item{
+    repo: String,
+    branch: String,
+    stash: String,
+    prev_branch: String,
+    build_order: u8
+}
+ 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Settings {
     current_dir: String,
@@ -77,4 +96,9 @@ fn create_test_data(path: &String) -> Settings {
         current_dir: path.clone(),
         items: things,
     }
+}
+
+
+pub struct Options {
+    
 }
