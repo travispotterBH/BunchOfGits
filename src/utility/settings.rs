@@ -1,5 +1,4 @@
 use directories::*;
-use toml::value::Date;
 use toml::value::Datetime;
 use std::fs;
 use std::io::*;
@@ -96,9 +95,4 @@ fn create_test_data(path: &String) -> Settings {
         current_dir: path.clone(),
         items: things,
     }
-}
-
-
-pub struct Options {
-    
 }

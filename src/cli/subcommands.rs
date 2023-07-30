@@ -41,7 +41,10 @@ pub enum SubCommands {
 
 #[derive(Args, Debug)]
 pub struct AddArgs {
-    name: Option<String>,
+    bunch: Option<String>,
+    file: Option<String>,
+    #[arg(required=false)]
+    order: i32,
 }
 
 pub fn add(args: &AddArgs) {
@@ -55,12 +58,13 @@ pub fn add(args: &AddArgs) {
     return confimration
     */
 
-    println!("{:?}", args.name);
+    println!("{:?}", args.file);
 }
 
 #[derive(Args, Debug)]
 pub struct DeleteArgs {
-    name: Option<String>,
+    bunch: Option<String>,
+    file: Option<String>,
 }
 
 pub fn delete(args: &DeleteArgs) {
@@ -76,7 +80,7 @@ pub fn delete(args: &DeleteArgs) {
 
 #[derive(Args, Debug)]
 pub struct SwitchArgs {
-    name: Option<String>,
+    bunch: Option<String>,
 }
 
 pub fn switch(args: &SwitchArgs) {
@@ -93,7 +97,6 @@ pub fn switch(args: &SwitchArgs) {
 
 #[derive(Args, Debug)]
 pub struct PreviousArgs {
-    name: Option<String>,
 }
 
 pub fn previous(args: &PreviousArgs) {
@@ -107,7 +110,8 @@ pub fn previous(args: &PreviousArgs) {
 
 #[derive(Args, Debug)]
 pub struct ListArgs {
-    name: Option<String>,
+    all: Option<bool>, 
+    current: Option<bool>,
 }
 
 pub fn list(args: &ListArgs) {
@@ -135,11 +139,24 @@ pub struct GoArgs {
 
 pub fn go(args: &GoArgs) {
     //(take in a bunch name, and then run needed commands to switch over all the branches)
+    /*
+        maybe rename to switch
+        read in the args
+        read in the settings
+        set previous  -> reorder as as necessary
+        find the matching settings item with the bunch name
+            open each item
+            if specific run the build script
+    */
 }
 
 #[derive(Args, Debug)]
 pub struct NewArgs {
     name: Option<String>,
+     
+    ///Name of template to use
+    #[arg(short, long)]
+    template: String,
 }
 
 pub fn new(args: &NewArgs) {
@@ -159,7 +176,7 @@ pub fn config(args: &ConfigArgs) {
 
 #[derive(Args, Debug)]
 pub struct PullArgs {
-    name: Option<String>,
+    bunch: Option<String>,
 }
 
 pub fn pull(args: &PullArgs) {
@@ -168,7 +185,7 @@ pub fn pull(args: &PullArgs) {
 
 #[derive(Args, Debug)]
 pub struct PushArgs {
-    name: Option<String>,
+    bunch: Option<String>,
 }
 
 pub fn push(args: &PushArgs) {
@@ -179,6 +196,7 @@ pub fn push(args: &PushArgs) {
 #[derive(Args, Debug)]
 pub struct TemplateArgs {
     name: Option<String>,
+    repos: Vec<String>,
 }
 
 pub fn template(args: &TemplateArgs) {

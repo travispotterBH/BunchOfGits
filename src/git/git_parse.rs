@@ -20,11 +20,27 @@ pub enum GitParseOperation {
     RevParse(Output),
 }
  
+pub struct Parse {
+    branch: String, 
+    added: u32,
+    deleted: u32,
+    modified: u32,
+     
+
+}
+ 
 /*
 Maybe this doesn't want to be an enum. Maybe just passing in the string of the command, and any relevant args is suffiecient. still need a way to direct it to the correct parser. 
 */
+//need to make sure to use the porcelain options.
+/*
+status -- git status --porcelain=v2  | git status -s | git name-rev 
 
-pub fn git_parse_decision(git_result: Output, command: GitParseOperation)-> Result<Ok,_>{
+git -C /Users/travispotter/Desktop/Code/Notes rev-parse --abbrev-ref HEAD --> branch name
+    
+git switch - --> switch to previous branch
+*/
+pub fn git_parse_decision(git_result: Output, command: GitParseOperation){
      
     match &command{
         GitParseOperation::Switch(git_result) => {
@@ -56,7 +72,6 @@ pub fn git_parse_decision(git_result: Output, command: GitParseOperation)-> Resu
         },
     } 
      
-    return Ok(()); 
 }
 
 
@@ -64,30 +79,30 @@ pub fn git_parse_decision(git_result: Output, command: GitParseOperation)-> Resu
 
 
 
-fn parse_switch(result: Output) -> Result<Ok,_> {
+fn parse_switch(result: Output)  {
 }
 
-fn parse_add(result: Output) -> Result<Ok,_> {
+fn parse_add(result: Output) {
 }
 
-fn parse_delete(result: Output) -> Result<Ok,_> {
+fn parse_delete(result: Output) {
 }
 
-fn parse_push(result: Output) -> Result<Ok,_> {
+fn parse_push(result: Output) {
 }
 
-fn parse_pull(result: Output) -> Result<Ok,_> {
+fn parse_pull(result: Output) {
 }
 
-fn parse_status(result: Output) -> Result<Ok,_> {
+fn parse_status(result: Output) {
 }
 
-fn parse_branch(result: Output) -> Result<Ok,_> {
+fn parse_branch(result: Output) {
 }
 
-fn parse_stash(result: Output) -> Result<Ok,_> {
+fn parse_stash(result: Output) {
 }
 
-fn parse_rev_parse(result: Output) -> Result<Ok,_> {
+fn parse_rev_parse(result: Output) {
 }
 
