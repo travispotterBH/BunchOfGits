@@ -6,7 +6,6 @@
 *
 */
 
-use regex::Regex;
 use std::process::*;
 
 pub enum GitParseOperation {
@@ -70,24 +69,3 @@ fn parse_branch(result: Output) {}
 fn parse_stash(result: Output) {}
 
 fn parse_rev_parse(result: Output) {}
-
-
-
-
-pub fn is_success_status_code(text: String) -> bool{
-    let re = Regex::new(r"exit status: (\d+)").unwrap();
-
-    match re.captures(&text) {
-        Some(caps) => {
-            let exit_status: i32 = caps[1].parse().unwrap();
-            if exit_status == 0 {
-                return true;
-            }else {
-                return false;
-            }
-        }
-        None => {
-            return false;
-        }
-    }
-}
