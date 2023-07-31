@@ -26,6 +26,7 @@ pub struct MainArgs {
 
 pub fn match_command(args: &MainArgs) {
     match &args.command {
+        /*
         SubCommands::Add(subcommand_args) => {
             add(&subcommand_args);
         }
@@ -38,12 +39,14 @@ pub fn match_command(args: &MainArgs) {
         SubCommands::Previous(subcommand_args) => {
             previous(&subcommand_args);
         }
-        SubCommands::List(subcommand_args) => {
-            list(&subcommand_args);
+        */
+        SubCommands::List => {
+            list();
         }
         SubCommands::Init(subcommand_args) => {
             init(&subcommand_args);
         }
+        /*
         SubCommands::Go(subcommand_args) => {
             go(&subcommand_args);
         }
@@ -62,5 +65,6 @@ pub fn match_command(args: &MainArgs) {
         SubCommands::Template(subcommand_args) => {
             template(&subcommand_args);
         }
+        */
     }
 }

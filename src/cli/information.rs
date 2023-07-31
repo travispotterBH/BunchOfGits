@@ -1,7 +1,6 @@
 use std::io::{Result, Write};
 
-pub fn request_information(request: &str) -> Result<String>{
-
+pub fn request_information(request: &str) -> Result<String> {
     let mut additional_info = String::new();
     print!("{}", request);
     std::io::stdout().flush().unwrap(); // Make sure the prompt is immediately displayed
@@ -9,7 +8,7 @@ pub fn request_information(request: &str) -> Result<String>{
 
     println!("Got additional info: {}", additional_info.trim());
     Ok(additional_info.to_string())
-} 
+}
 
 //use
 /*
@@ -18,5 +17,3 @@ pub fn request_information(request: &str) -> Result<String>{
     request_information(&request)?;
 *
 */
-
-

@@ -1,9 +1,10 @@
 use crate::cli::information::*;
 use crate::git::git_parse::git_parse_decision;
 use std::io::{Result, Write};
-use std::process::Command;
+use std::process::{Command, Output};
+use regex::Regex;
 
-pub fn run_process(command: &GitCommand) -> Result<()> {
+pub fn run_process(command: &GitCommand) -> Result<Output> {
     let mut cmd = command_builder(&command);
     let output = cmd.output()?;
 
@@ -11,7 +12,7 @@ pub fn run_process(command: &GitCommand) -> Result<()> {
 
     // match status{
     //}
-    Ok(())
+    Ok(output)
 }
 
 pub fn command_builder(command: &GitCommand) -> Command {
@@ -39,11 +40,7 @@ also perhaps this is an enum:
 function from subcommand calls run_git_process pasing in a GitCommand, the run process does a match over the type of command and pics the correct command name as an enum, which is where the rest of the arguments are held?
 */
 
-pub fn commmand_options(){
-
-}
-
-
+pub fn commmand_options() {}
 
 pub struct GitCommand {
     path: String,
@@ -138,7 +135,7 @@ impl GitCommand {
         }
     }
 
-    pub fn branch_name(path: String) -> GitCommand {
+    pub fn repo_dir(path: String) -> GitCommand {
         GitCommand {
             path,
             command: "rev-parse".to_string(),
@@ -146,6 +143,37 @@ impl GitCommand {
                 .iter()
                 .map(|&s| s.to_string())
                 .collect(),
+        }
+    }
+
+
+    pub fn is_repo (path: String) -> GitCommand {
+        GitCommand {
+            path,
+            command: "rev-parse".to_string(),
+            args: vec!["--is-inside-work-tree"]
+                .iter()
+                .map(|&s| s.to_string())
+                .collect(),
+        }
+    }
+
+}
+
+pub fn is_success_status_code(text: String) -> bool{
+    let re = Regex::new(r"exit status: (\d+)").unwrap();
+
+    match re.captures(&text) {
+        Some(caps) => {
+            let exit_status: i32 = caps[1].parse().unwrap();
+            if exit_status == 0 {
+                return true;
+            }else {
+                return false;
+            }
+        }
+        None => {
+            return false;
         }
     }
 }
