@@ -135,4 +135,5 @@ pub struct Settings {
     pub current_dir: String,
     pub repos: Vec<Repo>,
     pub bunches: Vec<Bunch>,
+    pub templates: Vec<Template>,
 }

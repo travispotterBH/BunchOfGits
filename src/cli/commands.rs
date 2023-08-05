@@ -61,7 +61,7 @@ pub fn match_command(args: &MainArgs, settings: &mut Settings) {
           }
           */
           SubCommand::Template(args) => {
-              template(&args);
+              template(&args, settings);
           }
     }
 }

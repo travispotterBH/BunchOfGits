@@ -258,8 +258,30 @@ pub struct TemplateArgs {
     repos: Vec<String>,
 }
 
-pub fn template(args: &TemplateArgs) {
+pub fn template(args: &TemplateArgs, settings:&mut Settings) {
 
     //(takes in arguments vector of repo names to be used for common development workflows) ex. three repos are commonly involved in each feature development. allow for quickly creating a branch on each of the repos of the same name
+
+        let mut template: Template = Template::new(args.name.clone());
+        for repo in args.repos.iter() {
+            if let Some(repository) = settings.repos.iter_mut().find(|r| r.nickname == repo.to_owned()) {
+                template.repos.push(repository.clone());
+                println!("Repo '{}' added to {}.", repo, args.name);
+                }
+             else {
+                println!("No repo of name '{}' found in the settings.", repo);
+            }
+}
+
+            let item = &settings.templates.iter().any(|template| template.name == args.name.clone());
+            if !item {
+                let _ = &settings
+                    .templates
+                    .push(template);
+            } else {
+                println!("Template already exists in the settings.");
+    }
+//}
+
     println!("{:?}", args.repos)
 }
