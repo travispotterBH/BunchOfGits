@@ -1,27 +1,22 @@
-use directories::*;
-use std::fs;
-use std::io::*;
-use std::path::Path;
-use std::u8;
-use std::env;
-use clap::{Args, Subcommand};
-use crate::git::*;
-use crate::utility::*;
+use crate::git::git::*;
 use crate::utility::settings::*;
-use crate::utility::settings::Settings;
+use clap::{Args, Subcommand};
+use std::env;
 
 #[derive(Subcommand, Debug)]
-pub enum SubCommands {
-    /*
+pub enum SubCommand {
     /// Adds the current repository to a specific bunch
     Add(AddArgs),
+    /*
 
     /// Deletes the current repository from a specific bunch
     Delete(DeleteArgs),
 
+    */
     /// Switch to the bunch configuration specified
     Switch(SwitchArgs),
 
+    /*
     /// Go to previous bunch configuration
     Previous(PreviousArgs),
     */
@@ -34,9 +29,10 @@ pub enum SubCommands {
     /// Go to the specified bunch
     Go(GoArgs),
 
+    */
     /// Create a new bunch
     New(NewArgs),
-
+    /*
     /// Change configuration settings
     Config(ConfigArgs),
 
@@ -46,45 +42,19 @@ pub enum SubCommands {
     /// Pull new commits from remote for all repositories in the bunch
     Pull(PullArgs),
 
+    */
     /// Set up a template
     Template(TemplateArgs),
-    */
 }
-
-
-
-/*
-let new_branch = GitCommand::new(
-"/Users/travispotter/Desktop/Code/Notes".to_string(),
-"test_branch3".to_string(),
-);
-
-let switch_branch = GitCommand::switch(
-"/Users/travispotter/Desktop/Code/Notes".to_string(),
-"test_branch".to_string(),
-);
-
-if let Err(e) = run_process(&new_branch) {
-eprintln!("Error: {}", e);
-}
-
-/*
-let command = GitCommand::new(
-"/Users/travispotter/Desktop/Code/Notes".to_string(),
-vec!["status"].iter().map(|&s| s.to_string()).collect()
-);
-*/
-*/
 
 #[derive(Args, Debug)]
 pub struct AddArgs {
-    bunch: Option<String>,
-    file: Option<String>,
-    #[arg(required = false)]
-    order: i32,
+    bunch: String,
+    repo: String,
+    branch: String,
 }
 
-pub fn add(args: &AddArgs) {
+pub fn add(args: &AddArgs, settings: &mut Settings) {
     //do something with this
     /*
     Need a known place for settings. I guess always look in the root directory or there should be
@@ -96,12 +66,18 @@ pub fn add(args: &AddArgs) {
     */
 
     //refactor out into get_settings() method
-
-    if let Some(settings) = crate::utility::settings::get_settings() {
-        let bunch: Vec<Bunch> = settings.bunches.into_iter().filter(|b| b.name == "bunch: 3").collect();
-        println!("{:?}", bunch.first().unwrap().name);
-        println!("{:?}", bunch.first().unwrap().items);
-    };
+    if let Some(ref mut bunch) = settings.bunches.iter_mut().find(|b| b.name == args.bunch) {
+        if let Some(repo) = &settings.repos.iter_mut().find(|r| r.nickname == args.repo) {
+            bunch.items.push(Item {
+                repo: repo.path.clone(),
+                branch: args.branch.clone(),
+            });
+        } else {
+            println!("No repo of name '{}' found in the settings.", args.repo);
+        }
+    } else {
+        println!("No bunch of name '{}' found in the settings.", args.bunch);
+    }
 }
 
 #[derive(Args, Debug)]
@@ -121,7 +97,11 @@ pub fn delete(args: &DeleteArgs) {
     */
 
     if let Some(settings) = crate::utility::settings::get_settings() {
-        let bunch: Vec<Bunch> = settings.bunches.into_iter().filter(|b| b.name == "bunch: 3").collect();
+        let bunch: Vec<Bunch> = settings
+            .bunches
+            .into_iter()
+            .filter(|b| b.name == "bunch: 3")
+            .collect();
         println!("{:?}", bunch.first().unwrap().name);
         println!("{:?}", bunch.first().unwrap().items);
     };
@@ -129,10 +109,10 @@ pub fn delete(args: &DeleteArgs) {
 
 #[derive(Args, Debug)]
 pub struct SwitchArgs {
-    bunch: Option<String>,
+    bunch: String,
 }
 
-pub fn switch(args: &SwitchArgs) {
+pub fn switch(args: &SwitchArgs, settings: &mut Settings) {
     //do something with this
     /*
     read in settings
@@ -142,10 +122,18 @@ pub fn switch(args: &SwitchArgs) {
     run build script for each branch in dependency order
     return back confirmation
     */
-    if let Some(settings) = crate::utility::settings::get_settings() {
-        let bunch: Vec<Bunch> = settings.bunches.into_iter().filter(|b| b.name == "bunch: 3").collect();
-        println!("{:?}", bunch.first().unwrap().name);
-        println!("{:?}", bunch.first().unwrap().items);
+    if let Some(bunch) = &settings
+        .bunches
+        .iter()
+        .filter(|b| b.name == args.bunch)
+        .collect::<Vec<&Bunch>>()
+        .first()
+    {
+        for item in &bunch.items {
+            run_process(&GitCommand::switch(item.repo.clone(), item.branch.clone()));
+        }
+    } else {
+        println!("No bunch of name '{}' found in the settings.", args.bunch);
     };
 }
 
@@ -160,32 +148,32 @@ pub fn previous(args: &PreviousArgs) {
     write to settings the new previous state name
     */
     if let Some(settings) = crate::utility::settings::get_settings() {
-        let bunch: Vec<Bunch> = settings.bunches.into_iter().filter(|b| b.name == "bunch: 3").collect();
+        let bunch: Vec<Bunch> = settings
+            .bunches
+            .into_iter()
+            .filter(|b| b.name == "bunch: 3")
+            .collect();
         println!("{:?}", bunch.first().unwrap().name);
         println!("{:?}", bunch.first().unwrap().items);
     };
 }
 
 pub fn list() {
-    //do something with this
-    /*
-    get settings
-    get all bunches
-    write to command line
-    */
     if let Some(settings) = crate::utility::settings::get_settings() {
         let bunches = settings.bunches.into_iter();
-            println!("{:?}", "-----bunches------");
+        println!("{:?}", "-----bunches------");
         for bunch in bunches {
-            println!("{:?}", "------------------");
-            println!("{:?}", bunch.name);
+            println!("Start: {:?}", bunch.name);
+            for item in bunch.items {
+                println!("    Repo:{:?} | Branch:{:?}", item.repo, item.branch);
+            }
+            println!("End: {:?}", bunch.name);
         }
 
         let repos = settings.repos.into_iter();
-            println!("{:?}", "------repos--------");
-        for repo in repos{
-            println!("{:?}", "------------------");
-            println!("{:?}{:?}", repo.nickname, repo.path);
+        println!("{:?}", "------repos--------");
+        for repo in repos {
+            println!("Name:{:?} | Path:{:?}", repo.nickname, repo.path);
         }
     };
 }
@@ -195,79 +183,28 @@ pub struct InitArgs {
     nickname: Option<String>,
 }
 
-pub fn init(args: &InitArgs) {
-    //initialize a new bunch current branch/repo
-    /*
-    *check if in a git repo
-    *check if settings exist if not create them.
-    *if in a git repo, check if repo is in the settings already
-    *place in settings with nickname if no nickname set, take the repo name as the name
-    * return back a console line with verbal feedback of what happened
-    */
-    //is git repo? 
-    //
-    //
+pub fn init(args: &InitArgs, settings: &mut Settings) {
+    let path = env::current_dir()
+        .unwrap()
+        .into_os_string()
+        .into_string()
+        .unwrap();
+    let command = GitCommand::is_repo(&path);
 
-    /*
-    if let Ok(current_dir) = env::current_dir(){
-    println!("The current directory is {}", current_dir.display());
-    };
-
-    if let Ok(settings_path) = settings_path(){
-    println!("The settings path is {}", settings_path);
-    };
-
-    if let Some(base_dirs) = BaseDirs::new() {
-        let home_dir: &Path = &base_dirs.home_dir();
-        println!("The home directory is {:?}", home_dir);
-    }
-    */
-
-    let path = env::current_dir().unwrap().into_os_string().into_string().unwrap();
-    let command = git::GitCommand::is_repo(path.clone());
-    match git::run_process(&command){
-        Ok(output) => {
-            if git::is_success_status_code(output.status.to_string()) == true{
-                if let Some(mut settings) = crate::utility::settings::get_settings() {
-                    let item:&Vec<Repo> = &settings.repos.clone().into_iter().filter(|repo| repo.path == path.clone()).collect();
-                    if item.len() == 0 {
-                        let _ = &settings.repos.push(Repo::new(path.clone(), args.nickname.clone()));
-                        let _ = crate::utility::settings::write_settings(&settings);
-                    } else {
-                        println!("Repo already exists in the settings.");
-                    }
-                };
+    if let Ok(output) = run_process(&command) {
+        if output.status.success() == true {
+            let item = &settings.repos.iter().any(|repo| repo.path == path);
+            if !item {
+                let _ = &settings
+                    .repos
+                    .push(Repo::new(path, args.nickname.to_owned()));
             } else {
-                println!("This is not a repo.");
-            };
-        },
-        Err(_) => {
-            println!("I made it to error.");
-        }
+                println!("Repo already exists in the settings.");
+            }
+        } else {
+            println!("This is not a repo.");
+        };
     }
-}
-
-#[derive(Args, Debug)]
-pub struct GoArgs {
-    name: String,
-}
-
-pub fn go(args: &GoArgs) {
-    //(take in a bunch name, and then run needed commands to switch over all the branches)
-    /*
-    maybe rename to switch
-    read in the args
-    read in the settings
-    set previous  -> reorder as as necessary
-    find the matching settings item with the bunch name
-    open each item
-    if specific run the build script
-    */
-    if let Some(settings) = crate::utility::settings::get_settings() {
-        let bunch: Vec<Bunch> = settings.bunches.into_iter().filter(|b| b.name == args.name).collect();
-        println!("{:?}", bunch.first().unwrap().name);
-        println!("{:?}", bunch.first().unwrap().items);
-    };
 }
 
 #[derive(Args, Debug)]
@@ -275,28 +212,14 @@ pub struct NewArgs {
     name: String,
 
     #[arg(num_args(0..))]
-    repo: Option<String>, 
-
+    repo: Option<String>,
     /////Name of template to use
     //#[arg(short, long)]
     //template: String,
 }
 
-pub fn new(args: &NewArgs) {
-
-    /*
-    * get current settings, if don't exist create default. --> go to init and change so default
-    * settings are created in get_settings rather than at init. 
-    *
-    *
-    */
-
-    if let Some(mut settings) = crate::utility::settings::get_settings() {
-        let bunch: Vec<Bunch> = settings.bunches.into_iter().filter(|b| b.name == args.name).collect();
-
-        //settings.bunches.push(Bunch::new())
-    };
-    //(create new set of branches in repos based on bunch template)
+pub fn new(args: &NewArgs, settings: &mut Settings) {
+    settings.bunches.push(Bunch::new(args.name.clone()));
 }
 
 #[derive(Args, Debug)]
@@ -330,11 +253,13 @@ pub fn push(args: &PushArgs) {
 
 #[derive(Args, Debug)]
 pub struct TemplateArgs {
-    name: Option<String>,
+    name: String,
+    #[arg(short, long, num_args(0..))]
     repos: Vec<String>,
 }
 
 pub fn template(args: &TemplateArgs) {
 
     //(takes in arguments vector of repo names to be used for common development workflows) ex. three repos are commonly involved in each feature development. allow for quickly creating a branch on each of the repos of the same name
+    println!("{:?}", args.repos)
 }

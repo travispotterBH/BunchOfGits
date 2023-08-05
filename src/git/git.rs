@@ -1,15 +1,14 @@
-use crate::cli::information::*;
-use crate::git::git_parse::git_parse_decision;
+use crate::git::*;
 use std::io::{Result, Write};
 use std::process::{Command, Output};
-use regex::Regex;
 
 pub fn run_process(command: &GitCommand) -> Result<Output> {
     let mut cmd = command_builder(&command);
     let output = cmd.output()?;
 
-    //let status = git_parse_decision(output, command.command);
+    let status = git_parse::git_parse_decision(output.clone(), command.command.clone());
 
+    //println!("{} | {:?} | {:?}",output.status.success(), output.stdout, output.stderr);
     // match status{
     //}
     Ok(output)
@@ -40,140 +39,115 @@ also perhaps this is an enum:
 function from subcommand calls run_git_process pasing in a GitCommand, the run process does a match over the type of command and pics the correct command name as an enum, which is where the rest of the arguments are held?
 */
 
-pub fn commmand_options() {}
-
+#[derive(Clone)]
 pub struct GitCommand {
-    path: String,
-    command: String,
-    args: Vec<String>,
+    pub path: String,
+    pub command: String,
+    pub args: Vec<String>,
 }
 
 impl GitCommand {
+    /*
     pub fn new(path: String, branch: String) -> GitCommand {
         GitCommand {
             path,
-            command: "switch".to_string(),
-            args: vec!["-c", &branch].iter().map(|&s| s.to_string()).collect(),
+            command: "switch".into(),
+            args: format!("{} {}", "-c", branch),
         }
     }
 
     pub fn pull(path: String, branch: String) -> GitCommand {
         GitCommand {
             path,
-            command: "pull".to_string(),
-            args: vec![&branch].iter().map(|&s| s.to_string()).collect(),
+            command: "pull".into(),
+            args: String::from(branch),
         }
     }
 
     pub fn push(path: String, branch: String) -> GitCommand {
         GitCommand {
             path,
-            command: "push".to_string(),
-            args: vec![&branch].iter().map(|&s| s.to_string()).collect(),
+            command: "push".into(),
+            args: String::from(branch),
         }
     }
+    */
 
     pub fn switch(path: String, branch: String) -> GitCommand {
         GitCommand {
             path,
-            command: "switch".to_string(),
+            command: "switch".into(),
             args: vec![&branch].iter().map(|&s| s.to_string()).collect(),
+            //args: format!("{} {}", "-C", branch),
         }
     }
-
+    /*
     pub fn status(path: String, branch: String) -> GitCommand {
         GitCommand {
             path,
-            command: "status".to_string(),
-            args: vec![&branch].iter().map(|&s| s.to_string()).collect(),
+            command: "status".into(),
+            args: String::from(branch),
         }
     }
 
     pub fn delete(path: String, branch: String) -> GitCommand {
         GitCommand {
             path,
-            command: "branch".to_string(),
-            args: vec!["-D", &branch].iter().map(|&s| s.to_string()).collect(),
+            command: "branch".into(),
+            args: format!("{} {}", "-D", branch),
         }
     }
 
     pub fn show_current(path: String) -> GitCommand {
         GitCommand {
             path,
-            command: "branch".to_string(),
-            args: vec!["--show-current"]
-                .iter()
-                .map(|&s| s.to_string())
-                .collect(),
+            command: "branch".into(),
+            args: String::from("--show-current"),
         }
     }
 
     pub fn stash_list(path: String, branch: String) -> GitCommand {
         GitCommand {
             path,
-            command: "stash".to_string(),
-            args: vec!["list", &branch]
-                .iter()
-                .map(|&s| s.to_string())
-                .collect(),
+            command: "stash".into(),
+            args: format!("{} {}", "list", branch),
         }
     }
 
     pub fn stash(path: String, branch: String) -> GitCommand {
         GitCommand {
             path,
-            command: "stash".to_string(),
-            args: vec!["--all"].iter().map(|&s| s.to_string()).collect(),
+            command: "stash".into(),
+            args: String::from("--all"),
         }
     }
 
     pub fn stash_pop(path: String) -> GitCommand {
         GitCommand {
             path,
-            command: "stash".to_string(),
-            args: vec!["apply"].iter().map(|&s| s.to_string()).collect(),
+            command: "stash".into(),
+            args: String::from("apply"),
         }
     }
 
     pub fn repo_dir(path: String) -> GitCommand {
         GitCommand {
             path,
-            command: "rev-parse".to_string(),
-            args: vec!["--show-toplevel"]
-                .iter()
-                .map(|&s| s.to_string())
-                .collect(),
+            command: "rev-parse".into(),
+            args: String::from("--show-toplevel")
         }
     }
 
-
-    pub fn is_repo (path: String) -> GitCommand {
+    */
+    pub fn is_repo(path: &String) -> GitCommand {
         GitCommand {
-            path,
-            command: "rev-parse".to_string(),
+            path: path.to_string(),
+            command: "rev-parse".into(),
             args: vec!["--is-inside-work-tree"]
                 .iter()
                 .map(|&s| s.to_string())
                 .collect(),
-        }
-    }
-
-}
-
-pub fn is_success_status_code(text: String) -> bool{
-    let re = Regex::new(r"exit status: (\d+)").unwrap();
-
-    match re.captures(&text) {
-        Some(caps) => {
-            let exit_status: i32 = caps[1].parse().unwrap();
-            if exit_status == 0 {
-                return true;
-            }else {
-                return false;
-            }
-        }
-        None => {
-            return false;
+            //args: String::from("--is-inside-work-tree")
         }
     }
 }

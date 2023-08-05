@@ -1,9 +1,10 @@
 use crate::cli::subcommands::*;
-use clap::{Args, Parser, Subcommand};
+use crate::utility::settings::Settings;
+use clap::Parser;
 
 #[derive(Parser, Debug)]
-#[command(name = "Bunch of Gits")]
-#[command(author = "Travis P. <travis.s.potter@gmail.com>")]
+#[command(name = "BunchOfGits")]
+#[command(author = "Travis Potter <travis.s.potter@gmail.com>")]
 #[command(version = "0.1.0")]
 #[command(
     about = "Takes the hassle out of working within multi-repo code bases.",
@@ -14,57 +15,53 @@ Just a bunch of gits."
 
 pub struct MainArgs {
     #[command(subcommand)]
-    command: SubCommands,
-    /////Name of a person to greet
-    //#[arg(short, long)]
-    //name: String,
-
-    /////Number of times to greet
-    //#[arg(short, long, default_value_t = 1)]
-    //count: u8,
+    command: SubCommand,
 }
 
-pub fn match_command(args: &MainArgs) {
+pub fn match_command(args: &MainArgs, settings: &mut Settings) {
     match &args.command {
+        SubCommand::Add(args) => {
+            add(&args, settings);
+        }
         /*
-        SubCommands::Add(subcommand_args) => {
-            add(&subcommand_args);
-        }
-        SubCommands::Delete(subcommand_args) => {
-            delete(&subcommand_args);
-        }
-        SubCommands::Switch(subcommand_args) => {
-            switch(&subcommand_args);
-        }
-        SubCommands::Previous(subcommand_args) => {
-            previous(&subcommand_args);
+        SubCommands::Delete(args) => {
+            delete(&args);
         }
         */
-        SubCommands::List => {
+        SubCommand::Switch(args) => {
+            switch(&args, settings);
+        }
+        /*
+         SubCommands::Previous(args) => {
+            previous(&args);
+        }
+        */
+        SubCommand::List => {
             list();
         }
-        SubCommands::Init(subcommand_args) => {
-            init(&subcommand_args);
+        SubCommand::Init(args) => {
+            init(&args, settings);
         }
         /*
-        SubCommands::Go(subcommand_args) => {
-            go(&subcommand_args);
+        SubCommands::Go(args) => {
+            go(&args);
         }
-        SubCommands::New(subcommand_args) => {
-            new(&subcommand_args);
-        }
-        SubCommands::Config(subcommand_args) => {
-            config(&subcommand_args);
-        }
-        SubCommands::Push(subcommand_args) => {
-            push(&subcommand_args);
-        }
-        SubCommands::Pull(subcommand_args) => {
-            pull(&subcommand_args);
-        }
-        SubCommands::Template(subcommand_args) => {
-            template(&subcommand_args);
-        }
-        */
+          */
+        SubCommand::New(args) => {
+            new(&args, settings);
+        } /*
+          SubCommands::Config(args) => {
+              config(&args);
+          }
+          SubCommands::Push(args) => {
+              push(&args);
+          }
+          SubCommands::Pull(args) => {
+              pull(&args);
+          }
+          */
+          SubCommand::Template(args) => {
+              template(&args);
+          }
     }
 }
