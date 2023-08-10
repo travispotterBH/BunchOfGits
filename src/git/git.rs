@@ -8,9 +8,9 @@ pub fn run_process(command: &GitCommand) -> Result<Output> {
 
     let status = git_parse::git_parse_decision(output.clone(), command.command.clone());
 
-    //println!("{} | {:?} | {:?}",output.status.success(), output.stdout, output.stderr);
-    // match status{
-    //}
+    //println!("{}" ,output.status.success());
+    //println!("{:?}", cmd);
+
     Ok(output)
 }
 
@@ -19,7 +19,15 @@ pub fn command_builder(command: &GitCommand) -> Command {
     cmd.arg("-C");
     cmd.arg(&command.path);
     cmd.arg(&command.command);
-    cmd.arg(&command.args);
+    cmd.args(&command.args);
+    /*
+    * Remember to read the friednly manual
+    * multiple arguments must use the "cmd.args" method
+    * so the values given must be in the form of a vec.
+    */
+
+
+//    println!("git -C {} {} {}",&command.path, &command.command, &command.args.join(""));
     return cmd;
 }
 
@@ -43,7 +51,7 @@ function from subcommand calls run_git_process pasing in a GitCommand, the run p
 pub struct GitCommand {
     pub path: String,
     pub command: String,
-    pub args: String,
+    pub args: Vec<String>,
 }
 
 impl GitCommand {
@@ -77,7 +85,7 @@ impl GitCommand {
         GitCommand {
             path: path.into(),
             command: "branch".into(),
-            args: format!("{} {}", branch, default_branch),
+            args: vec![branch, default_branch].into_iter().map(|s| s.into()).collect(),
         }
     }
 
@@ -85,7 +93,7 @@ impl GitCommand {
         GitCommand {
             path: path.into(),
             command: "switch".into(),
-            args: format!("{}", branch),
+            args: vec![branch].into_iter().map(|s| s.into()).collect(),
         }
     }
 
@@ -94,7 +102,7 @@ impl GitCommand {
         GitCommand {
             path: path.into(),
             command: "worktree".into(),
-            args: format!("{} {}","add", branch),
+            args: vec!["add", branch].into_iter().map(|s| s.into()).collect(),
         }
     }
 
@@ -102,7 +110,7 @@ impl GitCommand {
         GitCommand {
             path: path.into(),
             command: "worktree".into(),
-            args: format!("{} {}","remove", branch),
+            args: vec!["remove", branch].into_iter().map(|s| s.into()).collect(),
         }
     }
 
@@ -110,7 +118,7 @@ impl GitCommand {
         GitCommand {
             path: path.into(),
             command: "worktree".into(),
-            args: format!("{} {}","list", branch),
+            args: vec!["list", branch].into_iter().map(|s| s.into()).collect(),
         }
     }
 
@@ -118,7 +126,7 @@ impl GitCommand {
         GitCommand {
             path: path.into(),
             command: "switch".into(),
-            args: format!("{}", branch),
+            args: vec![branch].into_iter().map(|s| s.into()).collect(),
         }
     }
     /*
@@ -183,7 +191,7 @@ impl GitCommand {
         GitCommand {
             path: path.to_string(),
             command: "rev-parse".into(),
-            args: format!("{}","--is-inside-work-tree"),
+            args: vec!["--is-inside-work-tree"].into_iter().map(|s| s.into()).collect(),
         }
     }
 }

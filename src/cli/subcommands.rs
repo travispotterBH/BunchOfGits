@@ -241,18 +241,24 @@ pub fn new(args: &NewArgs) {
             settings.bunches.push(bunch);
 
             for repo in item.repos.iter() {
-                run_process(&GitCommand::branch(
+ //               println!("we are supposedly making branches");
+                let status = run_process(&GitCommand::branch(
                     &repo.path,
                     &args.name,
                     &repo.default_branch,
                 ));
+                
+                println!("{:?}", status.unwrap().status.success());
+
                 if args.go {
                     run_process(&GitCommand::switch(&repo.path, &args.name));
+//                println!("we are supposedly going");
                 }
             }
         }
     } else {
         settings.bunches.push(Bunch::new(args.name.clone()));
+  //      println!("no template found");
     }
 
     modify_settings(&settings);
