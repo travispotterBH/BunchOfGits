@@ -27,6 +27,11 @@ buncha [Options]
 
 ## Teaser For What is To Come: 
 
+```
+$buncha --help
+
+-----------------------
+
 Quickly switch between git repositories and specified branches to get your machine to the
 right state for the feature or bug changes you care about right now. Bookmarks for git workflows.
 Just a bunch of gits.
@@ -48,3 +53,5 @@ Options:
 
   -V, --version
           Print version
+
+```
