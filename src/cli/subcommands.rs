@@ -54,7 +54,7 @@ pub struct AddArgs {
     branch: String,
 }
 
-pub fn add(args: &AddArgs, settings: &mut Settings) {
+pub fn add(args: &AddArgs) {
     //do something with this
     /*
     Need a known place for settings. I guess always look in the root directory or there should be
@@ -65,6 +65,7 @@ pub fn add(args: &AddArgs, settings: &mut Settings) {
     return confimration
     */
 
+    let mut settings = get_settings();
     //refactor out into get_settings() method
     if let Some(ref mut bunch) = settings.bunches.iter_mut().find(|b| b.name == args.bunch) {
         if let Some(repo) = &settings.repos.iter_mut().find(|r| r.name == args.repo) {
@@ -78,6 +79,8 @@ pub fn add(args: &AddArgs, settings: &mut Settings) {
     } else {
         println!("No bunch of name '{}' found in the settings.", args.bunch);
     }
+
+    modify_settings(&settings);
 }
 
 #[derive(Args, Debug)]
@@ -96,15 +99,14 @@ pub fn delete(args: &DeleteArgs) {
     return confirmaiton
     */
 
-    if let Some(settings) = crate::utility::settings::get_settings() {
-        let bunch: Vec<Bunch> = settings
-            .bunches
-            .into_iter()
-            .filter(|b| b.name == "bunch: 3")
-            .collect();
-        println!("{:?}", bunch.first().unwrap().name);
-        println!("{:?}", bunch.first().unwrap().items);
-    };
+    let settings = get_settings();
+    let bunch: Vec<Bunch> = settings
+        .bunches
+        .into_iter()
+        .filter(|b| b.name == "bunch: 3")
+        .collect();
+    println!("{:?}", bunch.first().unwrap().name);
+    println!("{:?}", bunch.first().unwrap().items);
 }
 
 #[derive(Args, Debug)]
@@ -112,7 +114,7 @@ pub struct SwitchArgs {
     bunch: String,
 }
 
-pub fn switch(args: &SwitchArgs, settings: &mut Settings) {
+pub fn switch(args: &SwitchArgs) {
     //do something with this
     /*
     read in settings
@@ -122,6 +124,8 @@ pub fn switch(args: &SwitchArgs, settings: &mut Settings) {
     run build script for each branch in dependency order
     return back confirmation
     */
+
+    let mut settings = get_settings();
     if let Some(bunch) = &settings
         .bunches
         .iter()
@@ -135,6 +139,7 @@ pub fn switch(args: &SwitchArgs, settings: &mut Settings) {
     } else {
         println!("No bunch of name '{}' found in the settings.", args.bunch);
     };
+
 }
 
 #[derive(Args, Debug)]
@@ -147,7 +152,7 @@ pub fn previous(args: &PreviousArgs) {
     call switch on a saved previous state command.
     write to settings the new previous state name
     */
-    if let Some(settings) = crate::utility::settings::get_settings() {
+    let settings = get_settings();
         let bunch: Vec<Bunch> = settings
             .bunches
             .into_iter()
@@ -155,27 +160,27 @@ pub fn previous(args: &PreviousArgs) {
             .collect();
         println!("{:?}", bunch.first().unwrap().name);
         println!("{:?}", bunch.first().unwrap().items);
-    };
 }
 
 pub fn list() {
-    if let Some(settings) = crate::utility::settings::get_settings() {
-        let bunches = settings.bunches.into_iter();
-        println!("{:?}", "-----bunches------");
-        for bunch in bunches {
-            println!("Start: {:?}", bunch.name);
-            for item in bunch.items {
-                println!("    Repo:{:?} | Branch:{:?}", item.repo, item.branch);
-            }
-            println!("End: {:?}", bunch.name);
-        }
 
-        let repos = settings.repos.into_iter();
-        println!("{:?}", "------repos--------");
-        for repo in repos {
-            println!("Name:{:?} | Path:{:?}", repo.name, repo.path);
+    let settings = get_settings();
+    let bunches = settings.bunches.into_iter();
+    println!("{:?}", "-----bunches------");
+
+    for bunch in bunches {
+        println!("Start: {:?}", bunch.name);
+        for item in bunch.items {
+            println!("    Repo:{:?} | Branch:{:?}", item.repo, item.branch);
         }
-    };
+        println!("End: {:?}", bunch.name);
+    }
+
+    let repos = settings.repos.into_iter();
+    println!("{:?}", "------repos--------");
+    for repo in repos {
+        println!("Name:{:?} | Path:{:?}", repo.name, repo.path);
+    }
 }
 
 #[derive(Args, Debug)]
@@ -184,13 +189,16 @@ pub struct InitArgs {
     default_branch: String,
 }
 
-pub fn init(args: &InitArgs, settings: &mut Settings) {
+pub fn init(args: &InitArgs) {
     let path = env::current_dir()
         .unwrap()
         .into_os_string()
         .into_string()
         .unwrap();
+
     let command = GitCommand::is_repo(&path);
+
+    let mut settings = get_settings();
 
     if let Ok(output) = run_process(&command) {
         if output.status.success() == true {
@@ -201,6 +209,7 @@ pub fn init(args: &InitArgs, settings: &mut Settings) {
                     args.name.to_owned(),
                     args.default_branch.to_owned(),
                 ));
+                modify_settings(&settings);
             } else {
                 println!("Repo already exists in the settings.");
             }
@@ -219,7 +228,9 @@ pub struct NewArgs {
     go: bool,
 }
 
-pub fn new(args: &NewArgs, settings: &mut Settings) {
+pub fn new(args: &NewArgs) {
+    let mut settings = get_settings();
+
     if let Some(template) = &args.template {
         if let Some(item) = settings
             .templates
@@ -243,6 +254,8 @@ pub fn new(args: &NewArgs, settings: &mut Settings) {
     } else {
         settings.bunches.push(Bunch::new(args.name.clone()));
     }
+
+    modify_settings(&settings);
 }
 
 #[derive(Args, Debug)]
@@ -285,10 +298,14 @@ pub struct TemplateArgs {
     repos: Option<Vec<String>>,
 }
 
-pub fn template(args: &TemplateArgs, settings: &mut Settings) {
+pub fn template(args: &TemplateArgs) {
     //(takes in arguments vector of repo names to be used for common development workflows) ex. three repos are commonly involved in each feature development. allow for quickly creating a branch on each of the repos of the same name
+
+    let mut settings = get_settings();
+
     if let true = args.delete {
         settings.delete_template(args.name.clone());
+        modify_settings(&settings);
         return;
     };
 
@@ -322,5 +339,6 @@ pub fn template(args: &TemplateArgs, settings: &mut Settings) {
     }
     //}
 
+        modify_settings(&settings);
     println!("{:?}", args.repos)
 }

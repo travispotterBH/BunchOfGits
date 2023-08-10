@@ -12,17 +12,23 @@ use std::sync::Mutex;
 use lazy_static::lazy_static;
 
 lazy_static!{
-    static ref MY_STATIC_VARIABLE: Mutex<i32> = Mutex::new(0);
+    static ref SETTINGS: Mutex<Settings> = Mutex::new(Settings::default());
 }
 
-pub fn increment_variable() {
-    let mut value = MY_STATIC_VARIABLE.lock().unwrap();
-    *value += 1;
+pub fn initialize_settings() -> Settings {
+    let mut value = SETTINGS.lock().unwrap();
+    *value = read_settings().unwrap();
+    value.clone()
 }
 
-pub fn get_variable() -> i32 {
-    let value = MY_STATIC_VARIABLE.lock().unwrap();
-    *value
+pub fn modify_settings(new_value: &Settings) {
+    let mut value = SETTINGS.lock().unwrap();
+    *value = new_value.clone();
+}
+
+pub fn get_settings() -> Settings {
+    let value = SETTINGS.lock().unwrap();
+    value.clone()
 }
 
 fn settings_directory() -> Result<String> {
@@ -68,7 +74,7 @@ pub fn settings_path() -> Result<String> {
     ));
 }
 
-pub fn get_settings() -> Option<Settings> {
+ fn read_settings() -> Option<Settings> {
     let path = settings_path();
     if let Ok(file) = std::fs::read_to_string(&path.unwrap()) {
         if let Ok(settings) = toml::from_str(&file) {
@@ -97,7 +103,7 @@ pub fn create_default_settings() -> Settings {
     return settings;
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct Bunch {
     pub name: String,
     pub items: Vec<Item>,
@@ -161,7 +167,7 @@ impl Repo {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct Template {
     pub name: String,
     pub repos: Vec<Repo>,
@@ -180,7 +186,7 @@ impl Template {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default,Clone)]
 pub struct Settings {
     pub current_dir: String,
     pub repos: Vec<Repo>,

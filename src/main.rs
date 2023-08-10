@@ -12,24 +12,12 @@ use crate::utility::settings::*;
 
 
 fn main() {
-    let mut settings: Settings;
-
-    if let Some(setting) = crate::utility::settings::get_settings() {
-        settings = setting;
-    } else {
-        settings = crate::utility::settings::create_default_settings();
-    }
+    //let mut settings: Settings;
+    let _= initialize_settings();
 
     let args = MainArgs::parse();
 
-    match_command(&args, &mut settings);
+    match_command(&args);
 
-    /*    for repo in &settings.repos {
-            run_process(&GitCommand::switch(repo.path.clone(), "test".into()));
-            println!("On repo: {} | Branch: {}", repo.path, "test");
-            run_process(&GitCommand::switch(repo.path.clone(), "main".into()));
-            println!("On repo: {} | Branch: {}", repo.path, "main");
-        }
-    */
-    let _ = crate::utility::settings::write_settings(&settings);
+    let _ = crate::utility::settings::write_settings(&get_settings());
 }

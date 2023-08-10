@@ -18,10 +18,10 @@ pub struct MainArgs {
     command: SubCommand,
 }
 
-pub fn match_command(args: &MainArgs, settings: &mut Settings) {
+pub fn match_command(args: &MainArgs) {
     match &args.command {
         SubCommand::Add(args) => {
-            add(&args, settings);
+            add(&args);
         }
         /*
         SubCommands::Delete(args) => {
@@ -29,7 +29,7 @@ pub fn match_command(args: &MainArgs, settings: &mut Settings) {
         }
         */
         SubCommand::Switch(args) => {
-            switch(&args, settings);
+            switch(&args);
         }
         /*
          SubCommands::Previous(args) => {
@@ -40,7 +40,7 @@ pub fn match_command(args: &MainArgs, settings: &mut Settings) {
             list();
         }
         SubCommand::Init(args) => {
-            init(&args, settings);
+            init(&args);
         }
         /*
         SubCommands::Go(args) => {
@@ -48,7 +48,7 @@ pub fn match_command(args: &MainArgs, settings: &mut Settings) {
         }
           */
         SubCommand::New(args) => {
-            new(&args, settings);
+            new(&args);
         } /*
         SubCommands::Config(args) => {
         config(&args);
@@ -61,7 +61,7 @@ pub fn match_command(args: &MainArgs, settings: &mut Settings) {
         }
          */
         SubCommand::Template(args) => {
-            template(&args, settings);
+            template(&args);
         }
     }
 }
