@@ -19,7 +19,7 @@ pub fn command_builder(command: &GitCommand) -> Command {
     cmd.arg("-C");
     cmd.arg(&command.path);
     cmd.arg(&command.command);
-    cmd.args(&command.args);
+    cmd.arg(&command.args);
     return cmd;
 }
 
@@ -43,12 +43,12 @@ function from subcommand calls run_git_process pasing in a GitCommand, the run p
 pub struct GitCommand {
     pub path: String,
     pub command: String,
-    pub args: Vec<String>,
+    pub args: String,
 }
 
 impl GitCommand {
     /*
-    pub fn new(path: String, branch: String) -> GitCommand {
+    pub fn new(path: &str, branch: &str) -> GitCommand {
         GitCommand {
             path,
             command: "switch".into(),
@@ -56,41 +56,81 @@ impl GitCommand {
         }
     }
 
-    pub fn pull(path: String, branch: String) -> GitCommand {
+    pub fn pull(path: &str, branch: &str) -> GitCommand {
         GitCommand {
             path,
             command: "pull".into(),
-            args: String::from(branch),
+            args: format!("{}", branch),
         }
     }
 
-    pub fn push(path: String, branch: String) -> GitCommand {
+    pub fn push(path: &str, branch: &str) -> GitCommand {
         GitCommand {
             path,
             command: "push".into(),
-            args: String::from(branch),
+            args: &str::from(branch),
         }
     }
     */
 
-    pub fn switch(path: String, branch: String) -> GitCommand {
+    pub fn branch(path: &str, branch: &str, default_branch: &str) -> GitCommand {
         GitCommand {
-            path,
-            command: "switch".into(),
-            args: vec![&branch].iter().map(|&s| s.to_string()).collect(),
-            //args: format!("{} {}", "-C", branch),
-        }
-    }
-    /*
-    pub fn status(path: String, branch: String) -> GitCommand {
-        GitCommand {
-            path,
-            command: "status".into(),
-            args: String::from(branch),
+            path: path.into(),
+            command: "branch".into(),
+            args: format!("{} {}", branch, default_branch),
         }
     }
 
-    pub fn delete(path: String, branch: String) -> GitCommand {
+    pub fn switch(path: &str, branch: &str) -> GitCommand {
+        GitCommand {
+            path: path.into(),
+            command: "switch".into(),
+            args: format!("{}", branch),
+        }
+    }
+
+
+    pub fn worktree_add(path: &str, branch: &str) -> GitCommand {
+        GitCommand {
+            path: path.into(),
+            command: "worktree".into(),
+            args: format!("{} {}","add", branch),
+        }
+    }
+
+    pub fn worktree_remove(path: &str, branch: &str) -> GitCommand {
+        GitCommand {
+            path: path.into(),
+            command: "worktree".into(),
+            args: format!("{} {}","remove", branch),
+        }
+    }
+
+    pub fn worktree_list(path: &str, branch: &str) -> GitCommand {
+        GitCommand {
+            path: path.into(),
+            command: "worktree".into(),
+            args: format!("{} {}","list", branch),
+        }
+    }
+
+    pub fn init(path: &str, branch: &str) -> GitCommand {
+        GitCommand {
+            path: path.into(),
+            command: "switch".into(),
+            args: format!("{}", branch),
+        }
+    }
+    /*
+    pub fn status(path: &str, branch: &str) -> GitCommand {
+        GitCommand {
+            path,
+            command: "status".into(),
+            args: &str::from(branch),
+        }
+    }
+
+    pub fn delete(path: &str, branch: &str) -> GitCommand {
         GitCommand {
             path,
             command: "branch".into(),
@@ -98,15 +138,15 @@ impl GitCommand {
         }
     }
 
-    pub fn show_current(path: String) -> GitCommand {
+    pub fn show_current(path: &str) -> GitCommand {
         GitCommand {
             path,
             command: "branch".into(),
-            args: String::from("--show-current"),
+            args: &str::from("--show-current"),
         }
     }
 
-    pub fn stash_list(path: String, branch: String) -> GitCommand {
+    pub fn stash_list(path: &str, branch: &str) -> GitCommand {
         GitCommand {
             path,
             command: "stash".into(),
@@ -114,40 +154,36 @@ impl GitCommand {
         }
     }
 
-    pub fn stash(path: String, branch: String) -> GitCommand {
+    pub fn stash(path: &str, branch: &str) -> GitCommand {
         GitCommand {
             path,
             command: "stash".into(),
-            args: String::from("--all"),
+            args: &str::from("--all"),
         }
     }
 
-    pub fn stash_pop(path: String) -> GitCommand {
+    pub fn stash_pop(path: &str) -> GitCommand {
         GitCommand {
             path,
             command: "stash".into(),
-            args: String::from("apply"),
+            args: &str::from("apply"),
         }
     }
 
-    pub fn repo_dir(path: String) -> GitCommand {
+    pub fn repo_dir(path: &str) -> GitCommand {
         GitCommand {
             path,
             command: "rev-parse".into(),
-            args: String::from("--show-toplevel")
+            args: &str::from("--show-toplevel")
         }
     }
 
     */
-    pub fn is_repo(path: &String) -> GitCommand {
+    pub fn is_repo(path: &str) -> GitCommand {
         GitCommand {
             path: path.to_string(),
             command: "rev-parse".into(),
-            args: vec!["--is-inside-work-tree"]
-                .iter()
-                .map(|&s| s.to_string())
-                .collect(),
-            //args: String::from("--is-inside-work-tree")
+            args: format!("{}","--is-inside-work-tree"),
         }
     }
 }

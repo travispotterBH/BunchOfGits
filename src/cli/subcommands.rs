@@ -67,7 +67,7 @@ pub fn add(args: &AddArgs, settings: &mut Settings) {
 
     //refactor out into get_settings() method
     if let Some(ref mut bunch) = settings.bunches.iter_mut().find(|b| b.name == args.bunch) {
-        if let Some(repo) = &settings.repos.iter_mut().find(|r| r.nickname == args.repo) {
+        if let Some(repo) = &settings.repos.iter_mut().find(|r| r.name == args.repo) {
             bunch.items.push(Item {
                 repo: repo.path.clone(),
                 branch: args.branch.clone(),
@@ -130,7 +130,7 @@ pub fn switch(args: &SwitchArgs, settings: &mut Settings) {
         .first()
     {
         for item in &bunch.items {
-            run_process(&GitCommand::switch(item.repo.clone(), item.branch.clone()));
+            run_process(&GitCommand::switch(&item.repo, &item.branch));
         }
     } else {
         println!("No bunch of name '{}' found in the settings.", args.bunch);
@@ -173,14 +173,15 @@ pub fn list() {
         let repos = settings.repos.into_iter();
         println!("{:?}", "------repos--------");
         for repo in repos {
-            println!("Name:{:?} | Path:{:?}", repo.nickname, repo.path);
+            println!("Name:{:?} | Path:{:?}", repo.name, repo.path);
         }
     };
 }
 
 #[derive(Args, Debug)]
 pub struct InitArgs {
-    nickname: Option<String>,
+    name: String,
+    default_branch: String,
 }
 
 pub fn init(args: &InitArgs, settings: &mut Settings) {
@@ -195,9 +196,11 @@ pub fn init(args: &InitArgs, settings: &mut Settings) {
         if output.status.success() == true {
             let item = &settings.repos.iter().any(|repo| repo.path == path);
             if !item {
-                let _ = &settings
-                    .repos
-                    .push(Repo::new(path, args.nickname.to_owned()));
+                let _ = &settings.repos.push(Repo::new(
+                    path,
+                    args.name.to_owned(),
+                    args.default_branch.to_owned(),
+                ));
             } else {
                 println!("Repo already exists in the settings.");
             }
@@ -210,16 +213,36 @@ pub fn init(args: &InitArgs, settings: &mut Settings) {
 #[derive(Args, Debug)]
 pub struct NewArgs {
     name: String,
+    template: Option<String>,
 
-    #[arg(num_args(0..))]
-    repo: Option<String>,
-    /////Name of template to use
-    //#[arg(short, long)]
-    //template: String,
+    #[arg(short, long)]
+    go: bool,
 }
 
 pub fn new(args: &NewArgs, settings: &mut Settings) {
-    settings.bunches.push(Bunch::new(args.name.clone()));
+    if let Some(template) = &args.template {
+        if let Some(item) = settings
+            .templates
+            .iter()
+            .find(|t| t.name == template.clone())
+        {
+            let bunch = Bunch::from_template(args.name.clone(), &item);
+            settings.bunches.push(bunch);
+
+            for repo in item.repos.iter() {
+                run_process(&GitCommand::branch(
+                    &repo.path,
+                    &args.name,
+                    &repo.default_branch,
+                ));
+                if args.go {
+                    run_process(&GitCommand::switch(&repo.path, &args.name));
+                }
+            }
+        }
+    } else {
+        settings.bunches.push(Bunch::new(args.name.clone()));
+    }
 }
 
 #[derive(Args, Debug)]
@@ -254,34 +277,50 @@ pub fn push(args: &PushArgs) {
 #[derive(Args, Debug)]
 pub struct TemplateArgs {
     name: String,
+
+    #[arg(short, long)]
+    delete: bool,
+
     #[arg(short, long, num_args(0..))]
-    repos: Vec<String>,
+    repos: Option<Vec<String>>,
 }
 
-pub fn template(args: &TemplateArgs, settings:&mut Settings) {
-
+pub fn template(args: &TemplateArgs, settings: &mut Settings) {
     //(takes in arguments vector of repo names to be used for common development workflows) ex. three repos are commonly involved in each feature development. allow for quickly creating a branch on each of the repos of the same name
+    if let true = args.delete {
+        settings.delete_template(args.name.clone());
+        return;
+    };
 
-        let mut template: Template = Template::new(args.name.clone());
-        for repo in args.repos.iter() {
-            if let Some(repository) = settings.repos.iter_mut().find(|r| r.nickname == repo.to_owned()) {
-                template.repos.push(repository.clone());
-                println!("Repo '{}' added to {}.", repo, args.name);
-                }
-             else {
-                println!("No repo of name '{}' found in the settings.", repo);
-            }
-}
+    if args.repos == None || args.repos.clone().unwrap().len() == 0 {
+        println!("No repos passed in.");
+        return;
+    };
 
-            let item = &settings.templates.iter().any(|template| template.name == args.name.clone());
-            if !item {
-                let _ = &settings
-                    .templates
-                    .push(template);
-            } else {
-                println!("Template already exists in the settings.");
+    let mut template: Template = Template::new(args.name.clone());
+    for repo in args.repos.clone().unwrap().iter() {
+        if let Some(repository) = settings
+            .repos
+            .iter_mut()
+            .find(|r| r.name == repo.to_owned())
+        {
+            template.repos.push(repository.clone());
+            println!("Repo '{}' added to {}.", repo, args.name);
+        } else {
+            println!("No repo of name '{}' found in the settings.", repo);
+        }
     }
-//}
+
+    let item = &settings
+        .templates
+        .iter()
+        .any(|template| template.name == args.name.clone());
+    if !item {
+        let _ = &settings.templates.push(template);
+    } else {
+        println!("Template already exists in the settings.");
+    }
+    //}
 
     println!("{:?}", args.repos)
 }

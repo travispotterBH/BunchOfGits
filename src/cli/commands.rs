@@ -50,18 +50,18 @@ pub fn match_command(args: &MainArgs, settings: &mut Settings) {
         SubCommand::New(args) => {
             new(&args, settings);
         } /*
-          SubCommands::Config(args) => {
-              config(&args);
-          }
-          SubCommands::Push(args) => {
-              push(&args);
-          }
-          SubCommands::Pull(args) => {
-              pull(&args);
-          }
-          */
-          SubCommand::Template(args) => {
-              template(&args, settings);
-          }
+        SubCommands::Config(args) => {
+        config(&args);
+        }
+        SubCommands::Push(args) => {
+        push(&args);
+        }
+        SubCommands::Pull(args) => {
+        pull(&args);
+        }
+         */
+        SubCommand::Template(args) => {
+            template(&args, settings);
+        }
     }
 }

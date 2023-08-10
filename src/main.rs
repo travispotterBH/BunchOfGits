@@ -10,6 +10,7 @@ use git::git::{run_process, GitCommand};
 use crate::cli::commands::*;
 use crate::utility::settings::*;
 
+
 fn main() {
     let mut settings: Settings;
 
@@ -20,6 +21,7 @@ fn main() {
     }
 
     let args = MainArgs::parse();
+
     match_command(&args, &mut settings);
 
     /*    for repo in &settings.repos {
