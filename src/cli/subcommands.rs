@@ -5,6 +5,9 @@ use std::env;
 
 #[derive(Subcommand, Debug)]
 pub enum SubCommand {
+    /// For managing bunches
+    Bunch(BunchArgs),
+    
     /// Adds the current repository to a specific bunch
     Add(AddArgs),
     /*
@@ -24,7 +27,7 @@ pub enum SubCommand {
     List,
 
     /// Initialize bunch of gits with a new config file
-    Init(InitArgs),
+    Repo(RepoArgs),
     /*
     /// Go to the specified bunch
     Go(GoArgs),
@@ -46,6 +49,27 @@ pub enum SubCommand {
     /// Set up a template
     Template(TemplateArgs),
 }
+
+#[derive(Args, Debug)]
+pub struct BunchArgs {
+    #[arg(short, long, group = "mode")]
+    new: bool,
+
+    #[arg(short, long, group = "mode")]
+    delete: bool,
+
+    #[arg(short, long, group = "mode")]
+    add: bool,
+
+    //bunch: String,
+    //repo: String,
+    //branch: String,
+}
+
+pub fn bunch(args: &BunchArgs) {
+    println!("made it to bunch");
+    }
+
 
 #[derive(Args, Debug)]
 pub struct AddArgs {
@@ -139,7 +163,6 @@ pub fn switch(args: &SwitchArgs) {
     } else {
         println!("No bunch of name '{}' found in the settings.", args.bunch);
     };
-
 }
 
 #[derive(Args, Debug)]
@@ -153,17 +176,16 @@ pub fn previous(args: &PreviousArgs) {
     write to settings the new previous state name
     */
     let settings = get_settings();
-        let bunch: Vec<Bunch> = settings
-            .bunches
-            .into_iter()
-            .filter(|b| b.name == "bunch: 3")
-            .collect();
-        println!("{:?}", bunch.first().unwrap().name);
-        println!("{:?}", bunch.first().unwrap().items);
+    let bunch: Vec<Bunch> = settings
+        .bunches
+        .into_iter()
+        .filter(|b| b.name == "bunch: 3")
+        .collect();
+    println!("{:?}", bunch.first().unwrap().name);
+    println!("{:?}", bunch.first().unwrap().items);
 }
 
 pub fn list() {
-
     let settings = get_settings();
     let bunches = settings.bunches.into_iter();
     println!("{:?}", "-----bunches------");
@@ -184,12 +206,12 @@ pub fn list() {
 }
 
 #[derive(Args, Debug)]
-pub struct InitArgs {
+pub struct RepoArgs {
     name: String,
     default_branch: String,
 }
 
-pub fn init(args: &InitArgs) {
+pub fn repo(args: &RepoArgs) {
     let path = env::current_dir()
         .unwrap()
         .into_os_string()
@@ -204,7 +226,7 @@ pub fn init(args: &InitArgs) {
         if output.status.success() == true {
             let item = &settings.repos.iter().any(|repo| repo.path == path);
             if !item {
-                let _ = &settings.repos.push(Repo::new(
+                let _ = &settings.add_repo(Repo::new(
                     path,
                     args.name.to_owned(),
                     args.default_branch.to_owned(),
@@ -232,33 +254,32 @@ pub fn new(args: &NewArgs) {
     let mut settings = get_settings();
 
     if let Some(template) = &args.template {
-        if let Some(item) = settings
+        if let Some(item) = &settings
             .templates
-            .iter()
+            .iter_mut()
             .find(|t| t.name == template.clone())
         {
             let bunch = Bunch::from_template(args.name.clone(), &item);
-            settings.bunches.push(bunch);
-
             for repo in item.repos.iter() {
- //               println!("we are supposedly making branches");
+                //               println!("we are supposedly making branches");
                 let status = run_process(&GitCommand::branch(
                     &repo.path,
                     &args.name,
                     &repo.default_branch,
                 ));
-                
                 println!("{:?}", status.unwrap().status.success());
 
                 if args.go {
                     run_process(&GitCommand::switch(&repo.path, &args.name));
-//                println!("we are supposedly going");
+                    //                println!("we are supposedly going");
                 }
             }
+
+            &settings.add_bunch(&bunch);
         }
     } else {
-        settings.bunches.push(Bunch::new(args.name.clone()));
-  //      println!("no template found");
+            &settings.add_bunch(&Bunch::new(&args.name));
+        //      println!("no template found");
     }
 
     modify_settings(&settings);
@@ -345,6 +366,6 @@ pub fn template(args: &TemplateArgs) {
     }
     //}
 
-        modify_settings(&settings);
+    modify_settings(&settings);
     println!("{:?}", args.repos)
 }

@@ -8,10 +8,10 @@ use serde_derive::{Deserialize, Serialize};
 
 extern crate lazy_static;
 
-use std::sync::Mutex;
 use lazy_static::lazy_static;
+use std::sync::Mutex;
 
-lazy_static!{
+lazy_static! {
     static ref SETTINGS: Mutex<Settings> = Mutex::new(Settings::default());
 }
 
@@ -74,7 +74,7 @@ pub fn settings_path() -> Result<String> {
     ));
 }
 
- fn read_settings() -> Option<Settings> {
+fn read_settings() -> Option<Settings> {
     let path = settings_path();
     if let Ok(file) = std::fs::read_to_string(&path.unwrap()) {
         if let Ok(settings) = toml::from_str(&file) {
@@ -110,9 +110,9 @@ pub struct Bunch {
 }
 
 impl Bunch {
-    pub fn new(name: String) -> Bunch {
+    pub fn new(name: &str) -> Bunch {
         let mut new = Bunch::default();
-        new.name = name;
+        new.name = name.into();
         return new;
     }
 
@@ -129,7 +129,25 @@ impl Bunch {
         return bunch;
     }
 
-    pub fn update(&mut self, new: Bunch){
+    pub fn add_item(&mut self, item: Item) {
+        if let None = self.items.iter().find(|i| i.repo == item.repo) {
+            println!("Item of repo: '{}' on branch: {} added.", item.repo, item.branch);
+            self.items.push(item);
+        } else {
+            println!("An item matching the one passed in already exists on this bunch.");
+        };
+    }
+
+    pub fn remove_item(&mut self, item: &str) {
+        if let Some(idx) = self.items.iter().position(|i| i.repo == item) {
+            self.items.remove(idx);
+            println!("Item of repo: '{}' removed.", item);
+        } else {
+            println!("No matching items.");
+        };
+    }
+
+    pub fn update(&mut self, new: Bunch) {
         self.name = new.name;
         self.items = new.items;
     }
@@ -159,8 +177,8 @@ impl Repo {
             default_branch,
         }
     }
-    
-    pub fn update(&mut self, new: Repo){
+
+    pub fn update(&mut self, new: Repo) {
         self.path = new.path;
         self.name = new.name;
         self.default_branch = new.default_branch;
@@ -180,13 +198,30 @@ impl Template {
         return new;
     }
 
-    pub fn update(&mut self, new: Template){
+    pub fn add_repo(&mut self, repo: Repo) {
+        if let None = self.repos.iter().find(|r| r.path == repo.path || r.name == repo.name) {
+            println!("Repo: '{}' added.", repo.name);
+            self.repos.push(repo);
+        } else {
+            println!("An item matching the one passed in already exists on this Template.");
+        };
+    }
+
+    pub fn remove_repo(&mut self, item: &str) {
+        if let Some(idx) = self.repos.iter().position(|r| r.name == item) {
+            self.repos.remove(idx);
+            println!("Repo: '{}' removed.", item);
+        } else {
+            println!("No matching items.");
+        };
+    }
+    pub fn update(&mut self, new: Template) {
         self.name = new.name;
         self.repos = new.repos;
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Default,Clone)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct Settings {
     pub current_dir: String,
     pub repos: Vec<Repo>,
@@ -194,89 +229,88 @@ pub struct Settings {
     pub templates: Vec<Template>,
 }
 
-//use pub sub? for easier seeting updates
-impl Settings{
+impl Settings {
     pub fn add_repo(&mut self, repo: Repo) {
-        if let None = self.repos.iter().find(|r| r.name == repo.name){
+        if let None = self.repos.iter().find(|r| r.name == repo.name) {
             println!("Repo: '{}' added.", repo.name);
             self.repos.push(repo);
-        }else {
-          println!("A repo of the name '{}' already exists.", repo.name);
+        } else {
+            println!("A repo of the name '{}' already exists.", repo.name);
         };
     }
 
     pub fn delete_repo(&mut self, repo_name: String) {
-        if let Some(index) = self.repos.iter().position(|r| r.name == repo_name){
+        if let Some(index) = self.repos.iter().position(|r| r.name == repo_name) {
             self.repos.swap_remove(index);
             println!("Repo: '{}' deleted.", repo_name);
-        }else {
-          println!("A repo of the name '{}' does not exist.", repo_name);
+        } else {
+            println!("A repo of the name '{}' does not exist.", repo_name);
         };
     }
 
-    pub fn update_repo(&mut self, repo_name: String, new: Repo){
-         if let Some(repo) = self.repos.iter_mut().find(|r| r.name == repo_name){
-           //let _ = std::mem::replace(repo, new);
+    pub fn update_repo(&mut self, repo_name: String, new: Repo) {
+        if let Some(repo) = self.repos.iter_mut().find(|r| r.name == repo_name) {
+            //let _ = std::mem::replace(repo, new);
             repo.update(new);
             println!("Repo: '{}' updated.", repo_name);
-        }else {
-          println!("A repo of the name '{}' does not exist.", repo_name);
-        }; 
+        } else {
+            println!("A repo of the name '{}' does not exist.", repo_name);
+        };
     }
 
-    pub fn add_bunch(&mut self, bunch: Bunch) {
-        if let None = self.bunches.iter().find(|b| b.name == bunch.name){
+    pub fn add_bunch(&mut self, bunch: &Bunch) {
+        if let None = self.bunches.iter().find(|b| b.name == bunch.name) {
             println!("Bunch: '{}' added.", bunch.name);
-            self.bunches.push(bunch);
-        }else {
-          println!("A bunch of the name '{}' already exists.", bunch.name);
+            self.bunches.push(bunch.clone());
+        } else {
+            println!("A bunch of the name '{}' already exists.", bunch.name);
         };
     }
 
     pub fn delete_bunch(&mut self, bunch_name: String) {
-        if let Some(index) = self.bunches.iter().position(|b| b.name == bunch_name){
+        if let Some(index) = self.bunches.iter().position(|b| b.name == bunch_name) {
             self.bunches.swap_remove(index);
             println!("Bunch: '{}' deleted.", bunch_name);
-        }else {
-          println!("A bunch of the name '{}' does not exist.", bunch_name);
+        } else {
+            println!("A bunch of the name '{}' does not exist.", bunch_name);
         };
     }
 
-    pub fn update_bunch(&mut self, bunch_name: String, new: Bunch){
-         if let Some(bunch) = self.bunches.iter_mut().find(|b| b.name == bunch_name){
-           //let _ = std::mem::replace(bunch, new);
-           bunch.update(new);
+    pub fn update_bunch(&mut self, bunch_name: String, new: Bunch) {
+        if let Some(bunch) = self.bunches.iter_mut().find(|b| b.name == bunch_name) {
+            //let _ = std::mem::replace(bunch, new);
+            bunch.update(new);
             println!("Bunch: '{}' updated.", bunch_name);
-        }else {
-          println!("A bunch of the name '{}' does not exist.", bunch_name);
-        }; 
+        } else {
+            println!("A bunch of the name '{}' does not exist.", bunch_name);
+        };
     }
 
     pub fn add_template(&mut self, template: Template) {
-        if let None = self.templates.iter().find(|t| t.name == template.name){
+        if let None = self.templates.iter().find(|t| t.name == template.name) {
             println!("Template: '{}' added.", template.name);
             self.templates.push(template);
-        }else {
-          println!("A template of the name '{}' already exists.", template.name);
+        } else {
+            println!("A template of the name '{}' already exists.", template.name);
         };
     }
 
     pub fn delete_template(&mut self, template_name: String) {
-        if let Some(index) = self.templates.iter().position(|t| t.name == template_name){
+        if let Some(index) = self.templates.iter().position(|t| t.name == template_name) {
             println!("Template: '{}' deleted.", template_name);
             self.templates.swap_remove(index);
         } else {
-          println!("A template of the name '{}' does not exist.", template_name);
+            println!("A template of the name '{}' does not exist.", template_name);
         };
     }
 
-    pub fn update_template(&mut self, template_name: String, new: Template){
-         if let Some(template) = self.templates.iter_mut().find(|b| b.name == template_name){
-           //let _ = std::mem::replace(template, new);
-           template.update(new);
+    pub fn update_template(&mut self, template_name: String, new: Template) {
+        if let Some(template) = self.templates.iter_mut().find(|b| b.name == template_name) {
+            //let _ = std::mem::replace(template, new);
+            template.update(new);
             println!("Template: '{}' updated.", template_name);
-        }else {
-          println!("A template of the name '{}' does not exist.", template_name);
-        }; 
+        } else {
+            println!("A template of the name '{}' does not exist.", template_name);
+        };
     }
 }

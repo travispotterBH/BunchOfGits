@@ -10,10 +10,9 @@ use git::git::{run_process, GitCommand};
 use crate::cli::commands::*;
 use crate::utility::settings::*;
 
-
 fn main() {
     //let mut settings: Settings;
-    let _= initialize_settings();
+    let _ = initialize_settings();
 
     let args = MainArgs::parse();
 

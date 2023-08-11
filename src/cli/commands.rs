@@ -6,6 +6,7 @@ use clap::Parser;
 #[command(name = "BunchOfGits")]
 #[command(author = "Travis Potter <travis.s.potter@gmail.com>")]
 #[command(version = "0.1.0")]
+#[command(arg_required_else_help(true))]
 #[command(
     about = "Takes the hassle out of working within multi-repo code bases.",
     long_about = "Quickly switch between git repositories and specified branches to get your machine to the
@@ -39,8 +40,11 @@ pub fn match_command(args: &MainArgs) {
         SubCommand::List => {
             list();
         }
-        SubCommand::Init(args) => {
-            init(&args);
+        SubCommand::Bunch(args) => {
+            bunch(&args);
+        }
+        SubCommand::Repo(args) => {
+            repo(&args);
         }
         /*
         SubCommands::Go(args) => {

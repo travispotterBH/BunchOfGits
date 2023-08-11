@@ -21,31 +21,14 @@ pub fn command_builder(command: &GitCommand) -> Command {
     cmd.arg(&command.command);
     cmd.args(&command.args);
     /*
-    * Remember to read the friednly manual
-    * multiple arguments must use the "cmd.args" method
-    * so the values given must be in the form of a vec.
-    */
+     * Remember to read the friendly manual
+     * multiple arguments must use the "cmd.args" method
+     * so the values given must be in the form of a vec.
+     */
 
-
-//    println!("git -C {} {} {}",&command.path, &command.command, &command.args.join(""));
+    //    println!("git -C {} {} {}",&command.path, &command.command, &command.args.join(""));
     return cmd;
 }
-
-//Thoughts:
-/*
-If I set up an enum or struct that carries the type of command, then set up a vec of git objects --
-name pending change then I can pass that through with the args to the command builder, reducing the
-need for all the impl fn's down below
-
-there are some additional benefits. When it comes to parsing the command output, error, we need
-only pass through the git object type and then we can pass the output and the git object type
-to a parse decision router, which determines how and what to look for in the stdout/stderr
-
-
-also perhaps this is an enum:
-
-function from subcommand calls run_git_process pasing in a GitCommand, the run process does a match over the type of command and pics the correct command name as an enum, which is where the rest of the arguments are held?
-*/
 
 #[derive(Clone)]
 pub struct GitCommand {
@@ -85,7 +68,10 @@ impl GitCommand {
         GitCommand {
             path: path.into(),
             command: "branch".into(),
-            args: vec![branch, default_branch].into_iter().map(|s| s.into()).collect(),
+            args: vec![branch, default_branch]
+                .into_iter()
+                .map(|s| s.into())
+                .collect(),
         }
     }
 
@@ -94,31 +80,6 @@ impl GitCommand {
             path: path.into(),
             command: "switch".into(),
             args: vec![branch].into_iter().map(|s| s.into()).collect(),
-        }
-    }
-
-
-    pub fn worktree_add(path: &str, branch: &str) -> GitCommand {
-        GitCommand {
-            path: path.into(),
-            command: "worktree".into(),
-            args: vec!["add", branch].into_iter().map(|s| s.into()).collect(),
-        }
-    }
-
-    pub fn worktree_remove(path: &str, branch: &str) -> GitCommand {
-        GitCommand {
-            path: path.into(),
-            command: "worktree".into(),
-            args: vec!["remove", branch].into_iter().map(|s| s.into()).collect(),
-        }
-    }
-
-    pub fn worktree_list(path: &str, branch: &str) -> GitCommand {
-        GitCommand {
-            path: path.into(),
-            command: "worktree".into(),
-            args: vec!["list", branch].into_iter().map(|s| s.into()).collect(),
         }
     }
 
@@ -178,20 +139,86 @@ impl GitCommand {
         }
     }
 
+    */
     pub fn repo_dir(path: &str) -> GitCommand {
         GitCommand {
-            path,
+            path: path.into(),
             command: "rev-parse".into(),
-            args: &str::from("--show-toplevel")
+            args: vec!["--show-toplevel"].into_iter().map(|s| s.into()).collect(),
         }
     }
 
-    */
     pub fn is_repo(path: &str) -> GitCommand {
         GitCommand {
             path: path.to_string(),
             command: "rev-parse".into(),
-            args: vec!["--is-inside-work-tree"].into_iter().map(|s| s.into()).collect(),
+            args: vec!["--is-inside-git-dir"]
+                .into_iter()
+                .map(|s| s.into())
+                .collect(),
         }
     }
+
+//  Worktree v 
+    pub fn worktree_add(path: &str, branch: &str) -> GitCommand {
+        GitCommand {
+            path: path.into(),
+            command: "worktree".into(),
+            args: vec!["add", branch].into_iter().map(|s| s.into()).collect(),
+        }
+    }
+
+    pub fn worktree_remove(path: &str, branch: &str) -> GitCommand {
+        GitCommand {
+            path: path.into(),
+            command: "worktree".into(),
+            args: vec!["remove", branch]
+                .into_iter()
+                .map(|s| s.into())
+                .collect(),
+        }
+    }
+
+    pub fn worktree_list(path: &str, branch: &str) -> GitCommand {
+        GitCommand {
+            path: path.into(),
+            command: "worktree".into(),
+            args: vec!["list", branch].into_iter().map(|s| s.into()).collect(),
+        }
+    }
+
+    pub fn is_inside_worktree(path: &str) -> GitCommand {
+        GitCommand {
+            path: path.to_string(),
+            command: "rev-parse".into(),
+            args: vec!["--is-inside-work-tree"]
+                .into_iter()
+                .map(|s| s.into())
+                .collect(),
+        }
+    }
+
+    pub fn is_bare_repository(path: &str) -> GitCommand {
+        GitCommand {
+            path: path.to_string(),
+            command: "rev-parse".into(),
+            args: vec!["--is-bare-repository"]
+                .into_iter()
+                .map(|s| s.into())
+                .collect(),
+        }
+    }
+
+    pub fn worktree_common_dir(path: &str) -> GitCommand {
+        GitCommand {
+            path: path.to_string(),
+            command: "--git-common-dir".into(),
+            args: vec![""]
+                .into_iter()
+                .map(|s| s.into())
+                .collect(),
+        }
+    }
+//  Worktree ^
+
 }
