@@ -66,6 +66,10 @@ pub fn match_command(args: &MainArgs) {
          */
         SubCommand::Template(args) => {
             template(&args);
+        },
+
+        SubCommand::Init(args) => {
+            init(&args);
         }
     }
 }

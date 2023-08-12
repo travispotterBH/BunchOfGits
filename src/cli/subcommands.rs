@@ -1,4 +1,4 @@
-use crate::git::git::*;
+use crate::git::{git::*, worktree};
 use crate::utility::settings::*;
 use clap::{Args, Subcommand};
 use std::env;
@@ -48,6 +48,8 @@ pub enum SubCommand {
     */
     /// Set up a template
     Template(TemplateArgs),
+
+    Init(InitArgs),
 }
 
 #[derive(Args, Debug)]
@@ -368,4 +370,25 @@ pub fn template(args: &TemplateArgs) {
 
     modify_settings(&settings);
     println!("{:?}", args.repos)
+}
+
+#[derive(Args, Debug)]
+pub struct InitArgs {
+    #[arg(short, long)]
+    worktree: bool,
+}
+
+pub fn init(args: &InitArgs) {
+    //(takes in arguments vector of repo names to be used for common development workflows) ex. three repos are commonly involved in each feature development. allow for quickly creating a branch on each of the repos of the same name
+
+    let mut settings = get_settings();
+
+    if let false = args.worktree {
+        println!("I ain't doing shit");
+        return;
+    };
+
+
+    let source_path = env::current_dir().unwrap();
+    worktree::convert_to_bare(&source_path.to_str().unwrap());
 }

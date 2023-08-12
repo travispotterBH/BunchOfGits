@@ -6,7 +6,7 @@ pub fn run_process(command: &GitCommand) -> Result<Output> {
     let mut cmd = command_builder(&command);
     let output = cmd.output()?;
 
-    let status = git_parse::git_parse_decision(output.clone(), command.command.clone());
+    //let status = git_parse::git_parse_decision(output.clone(), command.command.clone());
 
     //println!("{}" ,output.status.success());
     //println!("{:?}", cmd);
@@ -219,6 +219,53 @@ impl GitCommand {
                 .collect(),
         }
     }
+
+    pub fn clone_mirror(source_path: &str, mirror_path: &str) -> GitCommand {
+        let mirror_path = format!("{}{}",mirror_path, "/.bare");
+        GitCommand {
+            path: source_path.to_string(),
+            command: "clone".into(),
+            args: vec!["--mirror", source_path, &mirror_path]
+                .into_iter()
+                .map(|s| s.into())
+                .collect(),
+        }
+    }
+
+    pub fn clone_bare(source_path: &str, mirror_path: &str) -> GitCommand {
+        let mirror_path = format!("{}{}",mirror_path, "/.bare");
+        GitCommand {
+            path: source_path.to_string(),
+            command: "clone".into(),
+            args: vec!["--bare", source_path, &mirror_path]
+                .into_iter()
+                .map(|s| s.into())
+                .collect(),
+        }
+    }
+
+    pub fn remote_add_origin(source_path: &str, origin: &str) -> GitCommand {
+        GitCommand {
+            path: source_path.to_string(),
+            command: "remote".into(),
+            args: vec!["add", "origin", origin]
+                .into_iter()
+                .map(|s| s.into())
+                .collect(),
+        }
+    }
+
+    pub fn remote_url(source_path: &str) -> GitCommand {
+        GitCommand {
+            path: source_path.to_string(),
+            command: "config".into(),
+            args: vec!["--get", "remote.origin.url"]
+                .into_iter()
+                .map(|s| s.into())
+                .collect(),
+        }
+    }
+
 //  Worktree ^
 
 }
