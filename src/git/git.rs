@@ -2,8 +2,8 @@ use crate::git::*;
 use std::io::{Result, Write};
 use std::process::{Command, Output};
 
-pub fn run_process(command: &GitCommand) -> Result<Output> {
-    let mut cmd = command_builder(&command);
+pub fn run_process(command: GitCommand) -> Result<Output> {
+    let mut cmd = command_builder(command);
     let output = cmd.output()?;
 
     //let status = git_parse::git_parse_decision(output.clone(), command.command.clone());
@@ -14,7 +14,7 @@ pub fn run_process(command: &GitCommand) -> Result<Output> {
     Ok(output)
 }
 
-pub fn command_builder(command: &GitCommand) -> Command {
+pub fn command_builder(command: GitCommand) -> Command {
     let mut cmd = Command::new("git");
     cmd.arg("-C");
     cmd.arg(&command.path);
@@ -144,7 +144,10 @@ impl GitCommand {
         GitCommand {
             path: path.into(),
             command: "rev-parse".into(),
-            args: vec!["--show-toplevel"].into_iter().map(|s| s.into()).collect(),
+            args: vec!["--show-toplevel"]
+                .into_iter()
+                .map(|s| s.into())
+                .collect(),
         }
     }
 
@@ -159,7 +162,7 @@ impl GitCommand {
         }
     }
 
-//  Worktree v 
+    //  Worktree v
     pub fn worktree_add(path: &str, branch: &str) -> GitCommand {
         GitCommand {
             path: path.into(),
@@ -209,19 +212,8 @@ impl GitCommand {
         }
     }
 
-    pub fn worktree_common_dir(path: &str) -> GitCommand {
-        GitCommand {
-            path: path.to_string(),
-            command: "--git-common-dir".into(),
-            args: vec![""]
-                .into_iter()
-                .map(|s| s.into())
-                .collect(),
-        }
-    }
-
     pub fn clone_mirror(source_path: &str, mirror_path: &str) -> GitCommand {
-        let mirror_path = format!("{}{}",mirror_path, "/.bare");
+        let mirror_path = format!("{}{}", mirror_path, "/.bare");
         GitCommand {
             path: source_path.to_string(),
             command: "clone".into(),
@@ -233,7 +225,7 @@ impl GitCommand {
     }
 
     pub fn clone_bare(source_path: &str, mirror_path: &str) -> GitCommand {
-        let mirror_path = format!("{}{}",mirror_path, "/.bare");
+        let mirror_path = format!("{}{}", mirror_path, "/.bare");
         GitCommand {
             path: source_path.to_string(),
             command: "clone".into(),
@@ -266,6 +258,37 @@ impl GitCommand {
         }
     }
 
-//  Worktree ^
+    //  Worktree ^
 
+    // Repository Status v
+    pub fn diff_index_quiet_head(source_path: &str) -> GitCommand {
+        GitCommand {
+            path: source_path.to_string(),
+            command: "diff-index".into(),
+            args: vec!["--quiet", "HEAD"]
+                .into_iter()
+                .map(|s| s.into())
+                .collect(),
+        }
+    }
+    pub fn diff_files_quiet(source_path: &str) -> GitCommand {
+        GitCommand {
+            path: source_path.to_string(),
+            command: "diff-files".into(),
+            args: vec!["--quiet"].into_iter().map(|s| s.into()).collect(),
+        }
+    }
+
+    pub fn common_dir(path: &str) -> GitCommand {
+        GitCommand {
+            path: path.to_string(),
+            command: "rev-parse".into(),
+            args: vec!["--git-common-dir"]
+                .into_iter()
+                .map(|s| s.into())
+                .collect(),
+        }
+    }
+
+    // Repository Status ^
 }

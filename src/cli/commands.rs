@@ -22,54 +22,54 @@ pub struct MainArgs {
 pub fn match_command(args: &MainArgs) {
     match &args.command {
         SubCommand::Add(args) => {
-            add(&args);
+            add(args);
         }
         /*
         SubCommands::Delete(args) => {
-            delete(&args);
+            delete(args);
         }
         */
         SubCommand::Switch(args) => {
-            switch(&args);
+            switch(args);
         }
         /*
          SubCommands::Previous(args) => {
-            previous(&args);
+            previous(args);
         }
         */
         SubCommand::List => {
             list();
         }
         SubCommand::Bunch(args) => {
-            bunch(&args);
+            bunch(args);
         }
         SubCommand::Repo(args) => {
-            repo(&args);
+            repo(args);
         }
         /*
         SubCommands::Go(args) => {
-            go(&args);
+            go(args);
         }
           */
         SubCommand::New(args) => {
-            new(&args);
+            new(args);
         } /*
         SubCommands::Config(args) => {
-        config(&args);
+        config(args);
         }
         SubCommands::Push(args) => {
-        push(&args);
+        push(args);
         }
         SubCommands::Pull(args) => {
-        pull(&args);
+        pull(args);
         }
          */
         SubCommand::Template(args) => {
-            template(&args);
-        },
+            template(args);
+        }
 
         SubCommand::Init(args) => {
-            init(&args);
+            init(args);
         }
     }
 }

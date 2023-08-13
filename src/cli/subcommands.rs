@@ -7,7 +7,7 @@ use std::env;
 pub enum SubCommand {
     /// For managing bunches
     Bunch(BunchArgs),
-    
+
     /// Adds the current repository to a specific bunch
     Add(AddArgs),
     /*
@@ -62,7 +62,6 @@ pub struct BunchArgs {
 
     #[arg(short, long, group = "mode")]
     add: bool,
-
     //bunch: String,
     //repo: String,
     //branch: String,
@@ -70,8 +69,7 @@ pub struct BunchArgs {
 
 pub fn bunch(args: &BunchArgs) {
     println!("made it to bunch");
-    }
-
+}
 
 #[derive(Args, Debug)]
 pub struct AddArgs {
@@ -94,7 +92,7 @@ pub fn add(args: &AddArgs) {
     let mut settings = get_settings();
     //refactor out into get_settings() method
     if let Some(ref mut bunch) = settings.bunches.iter_mut().find(|b| b.name == args.bunch) {
-        if let Some(repo) = &settings.repos.iter_mut().find(|r| r.name == args.repo) {
+        if let Some(repo) = settings.repos.iter_mut().find(|r| r.name == args.repo) {
             bunch.items.push(Item {
                 repo: repo.path.clone(),
                 branch: args.branch.clone(),
@@ -151,8 +149,8 @@ pub fn switch(args: &SwitchArgs) {
     return back confirmation
     */
 
-    let mut settings = get_settings();
-    if let Some(bunch) = &settings
+    let settings = get_settings();
+    if let Some(bunch) = settings
         .bunches
         .iter()
         .filter(|b| b.name == args.bunch)
@@ -160,7 +158,7 @@ pub fn switch(args: &SwitchArgs) {
         .first()
     {
         for item in &bunch.items {
-            run_process(&GitCommand::switch(&item.repo, &item.branch));
+            run_process(GitCommand::switch(&item.repo, &item.branch));
         }
     } else {
         println!("No bunch of name '{}' found in the settings.", args.bunch);
@@ -220,15 +218,13 @@ pub fn repo(args: &RepoArgs) {
         .into_string()
         .unwrap();
 
-    let command = GitCommand::is_repo(&path);
-
     let mut settings = get_settings();
 
-    if let Ok(output) = run_process(&command) {
+    if let Ok(output) = run_process(GitCommand::is_repo(&path)) {
         if output.status.success() == true {
-            let item = &settings.repos.iter().any(|repo| repo.path == path);
+            let item = settings.repos.iter().any(|repo| repo.path == path);
             if !item {
-                let _ = &settings.add_repo(Repo::new(
+                let _ = settings.add_repo(Repo::new(
                     path,
                     args.name.to_owned(),
                     args.default_branch.to_owned(),
@@ -264,7 +260,7 @@ pub fn new(args: &NewArgs) {
             let bunch = Bunch::from_template(args.name.clone(), &item);
             for repo in item.repos.iter() {
                 //               println!("we are supposedly making branches");
-                let status = run_process(&GitCommand::branch(
+                let status = run_process(GitCommand::branch(
                     &repo.path,
                     &args.name,
                     &repo.default_branch,
@@ -272,15 +268,15 @@ pub fn new(args: &NewArgs) {
                 println!("{:?}", status.unwrap().status.success());
 
                 if args.go {
-                    run_process(&GitCommand::switch(&repo.path, &args.name));
+                    run_process(GitCommand::switch(&repo.path, &args.name));
                     //                println!("we are supposedly going");
                 }
             }
 
-            &settings.add_bunch(&bunch);
+            settings.add_bunch(&bunch);
         }
     } else {
-            &settings.add_bunch(&Bunch::new(&args.name));
+        settings.add_bunch(&Bunch::new(&args.name));
         //      println!("no template found");
     }
 
@@ -384,10 +380,9 @@ pub fn init(args: &InitArgs) {
     let mut settings = get_settings();
 
     if let false = args.worktree {
-        println!("I ain't doing shit");
+        println!("Not sure what to do if you don't indicate -w or --worktree.");
         return;
     };
-
 
     let source_path = env::current_dir().unwrap();
     worktree::convert_to_bare(&source_path.to_str().unwrap());

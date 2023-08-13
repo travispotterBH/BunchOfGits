@@ -15,10 +15,9 @@ lazy_static! {
     static ref SETTINGS: Mutex<Settings> = Mutex::new(Settings::default());
 }
 
-pub fn initialize_settings() -> Settings {
+pub fn initialize_settings() {
     let mut value = SETTINGS.lock().unwrap();
     *value = read_settings().unwrap();
-    value.clone()
 }
 
 pub fn modify_settings(new_value: &Settings) {
@@ -131,7 +130,10 @@ impl Bunch {
 
     pub fn add_item(&mut self, item: Item) {
         if let None = self.items.iter().find(|i| i.repo == item.repo) {
-            println!("Item of repo: '{}' on branch: {} added.", item.repo, item.branch);
+            println!(
+                "Item of repo: '{}' on branch: {} added.",
+                item.repo, item.branch
+            );
             self.items.push(item);
         } else {
             println!("An item matching the one passed in already exists on this bunch.");
@@ -199,7 +201,11 @@ impl Template {
     }
 
     pub fn add_repo(&mut self, repo: Repo) {
-        if let None = self.repos.iter().find(|r| r.path == repo.path || r.name == repo.name) {
+        if let None = self
+            .repos
+            .iter()
+            .find(|r| r.path == repo.path || r.name == repo.name)
+        {
             println!("Repo: '{}' added.", repo.name);
             self.repos.push(repo);
         } else {
