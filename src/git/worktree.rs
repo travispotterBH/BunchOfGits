@@ -49,8 +49,15 @@ pub fn convert_to_bare(source_path: &str) {
 
         let source_path = Path::new(source_path);
         let source_path_as_string = source_path.to_str().unwrap();
-        
-        let clone_url = std::str::from_utf8(&run_process(GitCommand::remote_url(source_path.to_str().unwrap())).unwrap().stdout).unwrap().trim().to_string();
+
+        let clone_url = std::str::from_utf8(
+            &run_process(GitCommand::remote_url(source_path.to_str().unwrap()))
+                .unwrap()
+                .stdout,
+        )
+        .unwrap()
+        .trim()
+        .to_string();
 
         println!("{}", clone_url);
 
@@ -58,19 +65,32 @@ pub fn convert_to_bare(source_path: &str) {
             if let Some(mirror_path_as_string) = mirror_path.to_str() {
                 match fs::create_dir(&mirror_path) {
                     Ok(()) => {
-                        //let _output = run_process(GitCommand::clone_mirror(
                         let _output = run_process(GitCommand::clone_bare(
                             source_path_as_string,
                             &clone_url,
                             mirror_path_as_string,
                         ));
                         let _ = fs::write(mirror_path.join(".git"), "gitdir: ./.bare");
+
+                        match get_default_branch(mirror_path_as_string) {
+                            Ok(branch) => {
+                                run_process(GitCommand::worktree_add(
+                                    mirror_path_as_string,
+                                    &branch,
+                                ));
+
+                                env::set_current_dir(format!("{}/{}", mirror_path_as_string, branch));
+
+                                println!("Current worktree: {}", branch);
+                            }
+                            Err(error) => println!("An error occurred: {}", error),
+                        }
                     }
                     Err(_err) => {}
                 }
             };
         };
-        println!("I am successful.");
+
         return;
     };
 
@@ -96,6 +116,18 @@ fn check_branch_uncommitted_changes(source_path: &str) -> Result<bool, Error> {
     Ok(is_files_unchanged && is_index_clear)
 }
 
+fn get_default_branch(path: &str) -> Result<String, Box<dyn std::error::Error>> {
+    let output_str = String::from_utf8(run_process(GitCommand::default_branch(path))?.stdout)?;
+    let head_branch_line = output_str
+        .lines()
+        .find(|line| line.contains("HEAD branch:"))
+        .ok_or("HEAD branch not found")?;
+
+    let branch_name = head_branch_line.split_whitespace().nth(2).unwrap_or("");
+
+    Ok(branch_name.to_string())
+}
+
 fn repo_state(source_path: &str) -> Result<RepoState, Box<dyn std::error::Error>> {
     let is_inside_worktree =
         std::str::from_utf8(&run_process(GitCommand::is_inside_worktree(source_path))?.stdout)?
@@ -112,7 +144,7 @@ fn repo_state(source_path: &str) -> Result<RepoState, Box<dyn std::error::Error>
             .trim()
             == "true";
 
-      match (is_inside_worktree, is_bare_repository) {
+    match (is_inside_worktree, is_bare_repository) {
         (true, true) => {
             if common_dir == "".to_string() {
                 return Ok(RepoState::NotARepo);

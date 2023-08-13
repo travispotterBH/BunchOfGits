@@ -290,5 +290,15 @@ impl GitCommand {
         }
     }
 
+    pub fn default_branch(path: &str) -> GitCommand {
+        GitCommand {
+            path: path.to_string(),
+            command: "remote".into(),
+            args: vec!["show", "origin"]
+                .into_iter()
+                .map(|s| s.into())
+                .collect(),
+        }
+    }
     // Repository Status ^
 }

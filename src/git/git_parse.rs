@@ -39,7 +39,7 @@ pub fn git_parse_decision(git_result: Output, command: String) {
         "branch" => parse_branch(git_result),
         "stash" => parse_stash(git_result),
         "rev-parse" => parse_rev_parse(git_result),
-        &_ => todo!(),
+        _ => todo!(),
     }
 }
 
