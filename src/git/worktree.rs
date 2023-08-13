@@ -43,19 +43,25 @@ pub fn convert_to_bare(source_path: &str) {
                 println!("{}", value);
             }
             Err(..) => {
-                panic!("i never thought i'd get this far.")
+                panic!("uncommitted changes.")
             }
         };
 
         let source_path = Path::new(source_path);
         let source_path_as_string = source_path.to_str().unwrap();
+        
+        let clone_url = std::str::from_utf8(&run_process(GitCommand::remote_url(source_path.to_str().unwrap())).unwrap().stdout).unwrap().trim().to_string();
+
+        println!("{}", clone_url);
 
         if let Some(mirror_path) = get_mirror_path(&source_path) {
             if let Some(mirror_path_as_string) = mirror_path.to_str() {
                 match fs::create_dir(&mirror_path) {
                     Ok(()) => {
-                        let _output = run_process(GitCommand::clone_mirror(
+                        //let _output = run_process(GitCommand::clone_mirror(
+                        let _output = run_process(GitCommand::clone_bare(
                             source_path_as_string,
+                            &clone_url,
                             mirror_path_as_string,
                         ));
                         let _ = fs::write(mirror_path.join(".git"), "gitdir: ./.bare");
@@ -64,29 +70,11 @@ pub fn convert_to_bare(source_path: &str) {
                 }
             };
         };
+        println!("I am successful.");
+        return;
     };
 
     println!("I don't do anything because I am already a worktree, or because I am not a repo.");
-    //is_worktree_repository(source_path);
-    /*
-    println!("{:?}", get_mirror_path(Path::new(source_path)));
-        let source_path = Path::new(source_path);
-        let source_path_as_string = source_path.to_str().unwrap();
-
-        if let Some(mirror_path) = get_mirror_path(&source_path){
-            if let Some(mirror_path_as_string) = mirror_path.to_str() {
-                match fs::create_dir(&mirror_path) {
-                    Ok(()) => {
-                        let _output = run_process(GitCommand::clone_mirror(source_path_as_string, mirror_path_as_string));
-                        let _ = fs::write(mirror_path.join(".git"), "gitdir: ./.bare");
-                    },
-                    Err(err) => {},
-                }
-
-            };
-
-        };
-    */
 }
 
 fn get_mirror_path(source_path: &Path) -> Option<PathBuf> {
@@ -108,44 +96,6 @@ fn check_branch_uncommitted_changes(source_path: &str) -> Result<bool, Error> {
     Ok(is_files_unchanged && is_index_clear)
 }
 
-fn is_worktree_repository(source_path: &str) {
-    let mut is_inside_worktree: bool = false;
-    match run_process(GitCommand::is_inside_worktree(source_path)) {
-        Ok(value) => {
-            if value.status.success() && String::from_utf8_lossy(&value.stdout).trim() == "true" {
-                is_inside_worktree = true;
-            }
-        }
-        _ => todo!(),
-    }
-
-    let mut common_dir: String = String::new();
-    match run_process(GitCommand::common_dir(source_path)) {
-        Ok(value) => {
-            if value.status.success() {
-                common_dir = String::from_utf8_lossy(&value.stdout).trim().to_string();
-            }
-        }
-        _ => todo!(),
-    }
-
-    let mut is_bare_repository: bool = false;
-
-    match run_process(GitCommand::is_bare_repository(&common_dir)) {
-        Ok(value) => {
-            if value.status.success() {
-                is_bare_repository = String::from_utf8_lossy(&value.stdout).trim() == "true";
-            }
-        }
-        _ => todo!(),
-    }
-
-    println!(
-        "is worktree:{} | common_dir:{} | common_dir is bare: {}",
-        is_inside_worktree, common_dir, is_bare_repository
-    )
-}
-
 fn repo_state(source_path: &str) -> Result<RepoState, Box<dyn std::error::Error>> {
     let is_inside_worktree =
         std::str::from_utf8(&run_process(GitCommand::is_inside_worktree(source_path))?.stdout)?
@@ -162,12 +112,7 @@ fn repo_state(source_path: &str) -> Result<RepoState, Box<dyn std::error::Error>
             .trim()
             == "true";
 
-    println!(
-        "is worktree:{} | common_dir:{} | common_dir is bare: {}",
-        is_inside_worktree, common_dir, is_bare_repository
-    );
-
-    match (is_inside_worktree, is_bare_repository) {
+      match (is_inside_worktree, is_bare_repository) {
         (true, true) => {
             if common_dir == "".to_string() {
                 return Ok(RepoState::NotARepo);

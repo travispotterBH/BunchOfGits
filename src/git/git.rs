@@ -224,12 +224,12 @@ impl GitCommand {
         }
     }
 
-    pub fn clone_bare(source_path: &str, mirror_path: &str) -> GitCommand {
+    pub fn clone_bare(source_path: &str, clone_path: &str, mirror_path: &str) -> GitCommand {
         let mirror_path = format!("{}{}", mirror_path, "/.bare");
         GitCommand {
             path: source_path.to_string(),
             command: "clone".into(),
-            args: vec!["--bare", source_path, &mirror_path]
+            args: vec!["--bare", &clone_path, &mirror_path]
                 .into_iter()
                 .map(|s| s.into())
                 .collect(),
