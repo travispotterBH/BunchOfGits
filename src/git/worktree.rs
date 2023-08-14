@@ -6,7 +6,6 @@ use std::process::{Command, Output};
 use std::{ffi::*, usize};
 
 use std::str::*;
-
 use crate::git::git::*;
 
 //convert folder to worktree
@@ -38,13 +37,8 @@ pub fn convert_to_bare(source_path: &str) {
     // add to repos indicating it is worktree type
 
     if let Ok(RepoState::RepoNotWorktree) = repo_state(source_path) {
-        match check_branch_uncommitted_changes(source_path) {
-            Ok(value) => {
-                println!("{}", value);
-            }
-            Err(..) => {
+        if let Err(err) = check_branch_uncommitted_changes(source_path) {
                 panic!("uncommitted changes.")
-            }
         };
 
         let source_path = Path::new(source_path);
@@ -59,7 +53,7 @@ pub fn convert_to_bare(source_path: &str) {
         .trim()
         .to_string();
 
-        println!("{}", clone_url);
+        //println!("{}", clone_url);
 
         if let Some(mirror_path) = get_mirror_path(&source_path) {
             if let Some(mirror_path_as_string) = mirror_path.to_str() {
@@ -78,10 +72,6 @@ pub fn convert_to_bare(source_path: &str) {
                                     mirror_path_as_string,
                                     &branch,
                                 ));
-
-                                env::set_current_dir(format!("{}/{}", mirror_path_as_string, branch));
-
-                                println!("Current worktree: {}", branch);
                             }
                             Err(error) => println!("An error occurred: {}", error),
                         }
