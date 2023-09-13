@@ -370,14 +370,12 @@ pub fn template(args: &TemplateArgs) {
 
 #[derive(Args, Debug)]
 pub struct InitArgs {
-    #[arg(short, long)]
+    #[arg(short, long, help = "While in a git directory, use this feature to create a new git directory setup as a bare worktree in the directory above.")]
     worktree: bool,
 }
 
 pub fn init(args: &InitArgs) {
     //(takes in arguments vector of repo names to be used for common development workflows) ex. three repos are commonly involved in each feature development. allow for quickly creating a branch on each of the repos of the same name
-
-    let mut settings = get_settings();
 
     if let false = args.worktree {
         println!("Not sure what to do if you don't indicate -w or --worktree.");

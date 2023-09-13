@@ -90,6 +90,7 @@ impl GitCommand {
             args: vec![branch].into_iter().map(|s| s.into()).collect(),
         }
     }
+
     /*
     pub fn status(path: &str, branch: &str) -> GitCommand {
         GitCommand {
@@ -140,6 +141,7 @@ impl GitCommand {
     }
 
     */
+
     pub fn repo_dir(path: &str) -> GitCommand {
         GitCommand {
             path: path.into(),
@@ -241,6 +243,28 @@ impl GitCommand {
             path: source_path.to_string(),
             command: "remote".into(),
             args: vec!["add", "origin", origin]
+                .into_iter()
+                .map(|s| s.into())
+                .collect(),
+        }
+    }
+
+    pub fn config_remote_origin_fetch(source_path: &str, origin: &str) -> GitCommand {
+        GitCommand {
+            path: source_path.to_string(),
+            command: "config".into(),
+            args: vec!["remote.origin.fetch", "+refs/heads/*:refs/remotes/origin/*"]
+                .into_iter()
+                .map(|s| s.into())
+                .collect(),
+        }
+    }
+
+    pub fn fetch_origin(source_path: &str) -> GitCommand {
+        GitCommand {
+            path: source_path.to_string(),
+            command: "fetch".into(),
+            args: vec!["origin"]
                 .into_iter()
                 .map(|s| s.into())
                 .collect(),

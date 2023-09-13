@@ -53,8 +53,6 @@ pub fn convert_to_bare(source_path: &str) {
         .trim()
         .to_string();
 
-        //println!("{}", clone_url);
-
         if let Some(mirror_path) = get_mirror_path(&source_path) {
             if let Some(mirror_path_as_string) = mirror_path.to_str() {
                 match fs::create_dir(&mirror_path) {
@@ -118,7 +116,7 @@ fn get_default_branch(path: &str) -> Result<String, Box<dyn std::error::Error>> 
     Ok(branch_name.to_string())
 }
 
-fn repo_state(source_path: &str) -> Result<RepoState, Box<dyn std::error::Error>> {
+pub fn repo_state(source_path: &str) -> Result<RepoState, Box<dyn std::error::Error>> {
     let is_inside_worktree =
         std::str::from_utf8(&run_process(GitCommand::is_inside_worktree(source_path))?.stdout)?
             .trim()
@@ -150,7 +148,7 @@ fn repo_state(source_path: &str) -> Result<RepoState, Box<dyn std::error::Error>
     }
 }
 
-enum RepoState {
+pub enum RepoState {
     NotARepo,
     RepoNotWorktree,
     WorktreeTopLevelDir,
